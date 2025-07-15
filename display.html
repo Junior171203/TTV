@@ -68,13 +68,17 @@
     let lastSitdownState = false;
 
     soundBtn.addEventListener('click', () => {
-      audio.play().then(() => {
-        audio.pause();
-        audio.currentTime = 0;
+      // Проверим оба звука
+      Promise.all([
+        audio.play().then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+        }),
         sitdownAudio.play().then(() => {
           sitdownAudio.pause();
           sitdownAudio.currentTime = 0;
-        }).catch(console.error);
+        })
+      ]).then(() => {
         soundBtn.style.display = 'none';
       }).catch(e => {
         alert("Браузер заблокировал звук. Попробуйте ещё раз.");
