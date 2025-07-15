@@ -65,6 +65,7 @@
 
     let queue = [];
     let showingNotification = false;
+    let previousBgText = '';
 
     soundBtn.addEventListener('click', () => {
       notifyAudio.play().then(() => {
@@ -87,14 +88,42 @@
         const text = await res.text();
         bgDiv.textContent = text || 'Нет данных для фона';
 
-        if (text && typeof text === 'string' && text.toLowerCase().includes('можем садиться')) {
-          sitdownAudio.play().catch(e => console.error('Не удалось проиграть sitdown:', e));
+        const nowHasSitdown = text.toLowerCase().includes('можем садиться');
+        const previouslyHadSitdown = previousBgText.toLowerCase().includes('можем садиться');
+
+        // Показываем уведомление, только если фраза появилась заново
+        if (nowHasSitdown && !previouslyHadSitdown) {
+          showSitdownNotification();
         }
+
+        previousBgText = text;
 
       } catch (e) {
         bgDiv.textContent = 'Ошибка загрузки данных';
         console.error(e);
       }
+    }
+
+    function showSitdownNotification() {
+      msgDiv.textContent = 'Можем садиться';
+      msgDiv.style.display = 'flex';
+      bgDiv.style.display = 'none';
+      document.body.style.background = 'white';
+      document.body.style.color = 'black';
+
+      sitdownAudio.play().catch(console.error);
+
+      setTimeout(() => {
+        msgDiv.style.display = 'none';
+        bgDiv.style.display = 'flex';
+        document.body.style.background = 'black';
+        document.body.style.color = '#aaa';
+      }, 20000);
+
+      setTimeout(() => {
+        sitdownAudio.pause();
+        sitdownAudio.currentTime = 0;
+      }, 5000);
     }
 
     async function fetchMessages() {
