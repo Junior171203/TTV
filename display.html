@@ -59,18 +59,18 @@
   <script>
     const bgDiv = document.getElementById('backgroundText');
     const msgDiv = document.getElementById('message');
-    const notifyAudio = document.getElementById('notifySound');
+    const audio = document.getElementById('notifySound');
     const sitdownAudio = document.getElementById('sitdownSound');
     const soundBtn = document.getElementById('enableSound');
 
     let queue = [];
     let showingNotification = false;
-    let previousBgText = '';
+    let lastSitdownState = false;
 
     soundBtn.addEventListener('click', () => {
-      notifyAudio.play().then(() => {
-        notifyAudio.pause();
-        notifyAudio.currentTime = 0;
+      audio.play().then(() => {
+        audio.pause();
+        audio.currentTime = 0;
         sitdownAudio.play().then(() => {
           sitdownAudio.pause();
           sitdownAudio.currentTime = 0;
@@ -88,15 +88,12 @@
         const text = await res.text();
         bgDiv.textContent = text || 'Нет данных для фона';
 
-        const nowHasSitdown = text.toLowerCase().includes('можем садиться');
-        const previouslyHadSitdown = previousBgText.toLowerCase().includes('можем садиться');
-
-        // Показываем уведомление, только если фраза появилась заново
-        if (nowHasSitdown && !previouslyHadSitdown) {
+        // Проверка появления "можем садиться"
+        const currentSitdown = text.toLowerCase().includes('можем садиться');
+        if (currentSitdown && !lastSitdownState) {
           showSitdownNotification();
         }
-
-        previousBgText = text;
+        lastSitdownState = currentSitdown;
 
       } catch (e) {
         bgDiv.textContent = 'Ошибка загрузки данных';
@@ -153,7 +150,7 @@
       document.body.style.background = 'white';
       document.body.style.color = 'black';
 
-      notifyAudio.play().catch(console.error);
+      audio.play().catch(console.error);
 
       setTimeout(() => {
         msgDiv.style.display = 'none';
@@ -166,8 +163,8 @@
       }, 20000);
 
       setTimeout(() => {
-        notifyAudio.pause();
-        notifyAudio.currentTime = 0;
+        audio.pause();
+        audio.currentTime = 0;
       }, 5000);
     }
 
