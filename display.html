@@ -59,23 +59,24 @@
   <script>
     const bgDiv = document.getElementById('backgroundText');
     const msgDiv = document.getElementById('message');
-    const audio = document.getElementById('notifySound');
-    const sitdownAudio = document.getElementById('sitdownSound');
+    const notifySound = document.getElementById('notifySound');
+    const sitdownSound = document.getElementById('sitdownSound');
     const soundBtn = document.getElementById('enableSound');
 
     let queue = [];
     let showingNotification = false;
-    let lastBackgroundText = "";
+    let lastBgIncludedSitdown = false;
 
     soundBtn.addEventListener('click', () => {
-      audio.play().then(() => {
-        audio.pause();
-        audio.currentTime = 0;
-        sitdownAudio.play().then(() => {
-          sitdownAudio.pause();
-          sitdownAudio.currentTime = 0;
-          soundBtn.style.display = 'none';
-        }).catch(() => {});
+      // Предзагрузить оба звука
+      notifySound.play().then(() => {
+        notifySound.pause();
+        notifySound.currentTime = 0;
+        return sitdownSound.play();
+      }).then(() => {
+        sitdownSound.pause();
+        sitdownSound.currentTime = 0;
+        soundBtn.style.display = 'none';
       }).catch(e => {
         alert("Браузер заблокировал звук. Попробуйте ещё раз.");
         console.error(e);
@@ -88,19 +89,44 @@
         const text = await res.text();
         bgDiv.textContent = text || 'Нет данных для фона';
 
-        const currentText = text.toLowerCase();
-        const wasSitdown = lastBackgroundText.toLowerCase().includes('можем садиться');
-        const isSitdown = currentText.includes('можем садиться');
+        const containsSitdown = text.toLowerCase().includes('можем садиться');
 
-        if (!wasSitdown && isSitdown) {
-          showSitdownNotification();
+        // Только если раньше не было "можем садиться", а сейчас есть — показать уведомление
+        if (containsSitdown && !lastBgIncludedSitdown) {
+          showSitdown();
         }
 
-        lastBackgroundText = text;
+        lastBgIncludedSitdown = containsSitdown;
       } catch (e) {
         bgDiv.textContent = 'Ошибка загрузки данных';
         console.error(e);
       }
+    }
+
+    function showSitdown() {
+      if (showingNotification) return;
+
+      showingNotification = true;
+      msgDiv.textContent = 'МОЖЕМ САДИТЬСЯ';
+      msgDiv.style.display = 'flex';
+      bgDiv.style.display = 'none';
+      document.body.style.background = 'white';
+      document.body.style.color = 'black';
+
+      sitdownSound.play().catch(console.error);
+
+      setTimeout(() => {
+        msgDiv.style.display = 'none';
+        bgDiv.style.display = 'flex';
+        document.body.style.background = 'black';
+        document.body.style.color = '#aaa';
+        showingNotification = false;
+      }, 20000);
+
+      setTimeout(() => {
+        sitdownSound.pause();
+        sitdownSound.currentTime = 0;
+      }, 5000);
     }
 
     async function fetchMessages() {
@@ -112,14 +138,14 @@
 
         if (messages.length > 0) {
           queue.push(...messages);
-          showNextNotification();
+          showNextMessage();
         }
       } catch (e) {
         console.error('Ошибка получения сообщений:', e);
       }
     }
 
-    function showNextNotification() {
+    function showNextMessage() {
       if (queue.length === 0) return;
       showingNotification = true;
 
@@ -130,7 +156,7 @@
       document.body.style.background = 'white';
       document.body.style.color = 'black';
 
-      audio.play().catch(console.error);
+      notifySound.play().catch(console.error);
 
       setTimeout(() => {
         msgDiv.style.display = 'none';
@@ -138,39 +164,12 @@
         document.body.style.background = 'black';
         document.body.style.color = '#aaa';
         showingNotification = false;
-
-        if (queue.length > 0) showNextNotification();
+        if (queue.length > 0) showNextMessage();
       }, 20000);
 
       setTimeout(() => {
-        audio.pause();
-        audio.currentTime = 0;
-      }, 5000);
-    }
-
-    function showSitdownNotification() {
-      if (showingNotification) return;
-      showingNotification = true;
-
-      msgDiv.textContent = 'МОЖЕМ САДИТЬСЯ';
-      msgDiv.style.display = 'flex';
-      bgDiv.style.display = 'none';
-      document.body.style.background = 'white';
-      document.body.style.color = 'black';
-
-      sitdownAudio.play().catch(console.error);
-
-      setTimeout(() => {
-        msgDiv.style.display = 'none';
-        bgDiv.style.display = 'flex';
-        document.body.style.background = 'black';
-        document.body.style.color = '#aaa';
-        showingNotification = false;
-      }, 20000);
-
-      setTimeout(() => {
-        sitdownAudio.pause();
-        sitdownAudio.currentTime = 0;
+        notifySound.pause();
+        notifySound.currentTime = 0;
       }, 5000);
     }
 
