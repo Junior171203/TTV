@@ -68,7 +68,6 @@
     let lastSitdownState = false;
 
     soundBtn.addEventListener('click', () => {
-      // Проверим оба звука
       Promise.all([
         audio.play().then(() => {
           audio.pause();
@@ -92,39 +91,15 @@
         const text = await res.text();
         bgDiv.textContent = text || 'Нет данных для фона';
 
-        // Проверка появления "можем садиться"
         const currentSitdown = text.toLowerCase().includes('можем садиться');
         if (currentSitdown && !lastSitdownState) {
           showSitdownNotification();
         }
         lastSitdownState = currentSitdown;
-
       } catch (e) {
         bgDiv.textContent = 'Ошибка загрузки данных';
         console.error(e);
       }
-    }
-
-    function showSitdownNotification() {
-      msgDiv.textContent = 'Можем садиться';
-      msgDiv.style.display = 'flex';
-      bgDiv.style.display = 'none';
-      document.body.style.background = 'white';
-      document.body.style.color = 'black';
-
-      sitdownAudio.play().catch(console.error);
-
-      setTimeout(() => {
-        msgDiv.style.display = 'none';
-        bgDiv.style.display = 'flex';
-        document.body.style.background = 'black';
-        document.body.style.color = '#aaa';
-      }, 20000);
-
-      setTimeout(() => {
-        sitdownAudio.pause();
-        sitdownAudio.currentTime = 0;
-      }, 5000);
     }
 
     async function fetchMessages() {
@@ -154,7 +129,12 @@
       document.body.style.background = 'white';
       document.body.style.color = 'black';
 
-      audio.play().catch(console.error);
+      // Решающее отличие:
+      const lower = message.toLowerCase();
+      const isSitdown = lower.includes('можем садиться');
+
+      const sound = isSitdown ? sitdownAudio : audio;
+      sound.play().catch(console.error);
 
       setTimeout(() => {
         msgDiv.style.display = 'none';
@@ -167,8 +147,30 @@
       }, 20000);
 
       setTimeout(() => {
-        audio.pause();
-        audio.currentTime = 0;
+        sound.pause();
+        sound.currentTime = 0;
+      }, 5000);
+    }
+
+    function showSitdownNotification() {
+      msgDiv.textContent = 'Можем садиться';
+      msgDiv.style.display = 'flex';
+      bgDiv.style.display = 'none';
+      document.body.style.background = 'white';
+      document.body.style.color = 'black';
+
+      sitdownAudio.play().catch(console.error);
+
+      setTimeout(() => {
+        msgDiv.style.display = 'none';
+        bgDiv.style.display = 'flex';
+        document.body.style.background = 'black';
+        document.body.style.color = '#aaa';
+      }, 20000);
+
+      setTimeout(() => {
+        sitdownAudio.pause();
+        sitdownAudio.currentTime = 0;
       }, 5000);
     }
 
