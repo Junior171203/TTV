@@ -68,7 +68,6 @@
     let lastBgIncludedSitdown = false;
 
     soundBtn.addEventListener('click', () => {
-      // Предзагрузить оба звука
       notifySound.play().then(() => {
         notifySound.pause();
         notifySound.currentTime = 0;
@@ -91,7 +90,6 @@
 
         const containsSitdown = text.toLowerCase().includes('можем садиться');
 
-        // Только если раньше не было "можем садиться", а сейчас есть — показать уведомление
         if (containsSitdown && !lastBgIncludedSitdown) {
           showSitdown();
         }
@@ -136,8 +134,11 @@
         const res = await fetch('https://script.google.com/macros/s/AKfycbxVVkIad26K7uwn36VfVO7xcCUe_OeGzC2flVEX3fKsDM9aCiftGdktNI0oLvH9Ho_w/exec');
         const messages = await res.json();
 
-        if (messages.length > 0) {
-          queue.push(...messages);
+        // Фильтруем "можем садиться", чтобы он не попал в обычные уведомления
+        const filtered = messages.filter(msg => !msg.toLowerCase().includes('можем садиться'));
+
+        if (filtered.length > 0) {
+          queue.push(...filtered);
           showNextMessage();
         }
       } catch (e) {
@@ -164,6 +165,7 @@
         document.body.style.background = 'black';
         document.body.style.color = '#aaa';
         showingNotification = false;
+
         if (queue.length > 0) showNextMessage();
       }, 20000);
 
