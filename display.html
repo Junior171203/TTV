@@ -65,20 +65,17 @@
 
     let queue = [];
     let showingNotification = false;
-    let lastSitdownState = false;
+    let lastBackgroundText = "";
 
     soundBtn.addEventListener('click', () => {
-      Promise.all([
-        audio.play().then(() => {
-          audio.pause();
-          audio.currentTime = 0;
-        }),
+      audio.play().then(() => {
+        audio.pause();
+        audio.currentTime = 0;
         sitdownAudio.play().then(() => {
           sitdownAudio.pause();
           sitdownAudio.currentTime = 0;
-        })
-      ]).then(() => {
-        soundBtn.style.display = 'none';
+          soundBtn.style.display = 'none';
+        }).catch(() => {});
       }).catch(e => {
         alert("Браузер заблокировал звук. Попробуйте ещё раз.");
         console.error(e);
@@ -91,11 +88,15 @@
         const text = await res.text();
         bgDiv.textContent = text || 'Нет данных для фона';
 
-        const currentSitdown = text.toLowerCase().includes('можем садиться');
-        if (currentSitdown && !lastSitdownState) {
+        const currentText = text.toLowerCase();
+        const wasSitdown = lastBackgroundText.toLowerCase().includes('можем садиться');
+        const isSitdown = currentText.includes('можем садиться');
+
+        if (!wasSitdown && isSitdown) {
           showSitdownNotification();
         }
-        lastSitdownState = currentSitdown;
+
+        lastBackgroundText = text;
       } catch (e) {
         bgDiv.textContent = 'Ошибка загрузки данных';
         console.error(e);
@@ -129,12 +130,7 @@
       document.body.style.background = 'white';
       document.body.style.color = 'black';
 
-      // Решающее отличие:
-      const lower = message.toLowerCase();
-      const isSitdown = lower.includes('можем садиться');
-
-      const sound = isSitdown ? sitdownAudio : audio;
-      sound.play().catch(console.error);
+      audio.play().catch(console.error);
 
       setTimeout(() => {
         msgDiv.style.display = 'none';
@@ -147,13 +143,16 @@
       }, 20000);
 
       setTimeout(() => {
-        sound.pause();
-        sound.currentTime = 0;
+        audio.pause();
+        audio.currentTime = 0;
       }, 5000);
     }
 
     function showSitdownNotification() {
-      msgDiv.textContent = 'Можем садиться';
+      if (showingNotification) return;
+      showingNotification = true;
+
+      msgDiv.textContent = 'МОЖЕМ САДИТЬСЯ';
       msgDiv.style.display = 'flex';
       bgDiv.style.display = 'none';
       document.body.style.background = 'white';
@@ -166,6 +165,7 @@
         bgDiv.style.display = 'flex';
         document.body.style.background = 'black';
         document.body.style.color = '#aaa';
+        showingNotification = false;
       }, 20000);
 
       setTimeout(() => {
