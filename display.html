@@ -46,6 +46,19 @@
       border-radius: 5px;
       cursor: pointer;
     }
+    /* Таблица для фонового текста */
+    #backgroundText table {
+      margin: auto;
+      font-family: monospace;
+      color: #aaa;
+      border-collapse: collapse;
+      user-select: none;
+    }
+    #backgroundText td {
+      padding: 2px 10px;
+      border: 1px solid #555;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -85,10 +98,23 @@
     async function fetchBackground() {
       try {
         const res = await fetch('https://script.google.com/macros/s/AKfycbxVVkIad26K7uwn36VfVO7xcCUe_OeGzC2flVEX3fKsDM9aCiftGdktNI0oLvH9Ho_w/exec?bg=1');
-        const text = await res.text();
-        bgDiv.textContent = text || 'Нет данных для фона';
+        const values = await res.json();
 
-        const containsSitdown = text.toLowerCase().includes('можем садиться');
+        // Рендерим таблицу из массива значений
+        let html = '<table>';
+        for (const row of values) {
+          html += '<tr>';
+          for (const cell of row) {
+            html += `<td>${cell || ''}</td>`;
+          }
+          html += '</tr>';
+        }
+        html += '</table>';
+        bgDiv.innerHTML = html;
+
+        // Проверяем наличие "можем садиться"
+        const flatValues = values.flat().join(' ').toLowerCase();
+        const containsSitdown = flatValues.includes('можем садиться');
 
         if (containsSitdown && !lastBgIncludedSitdown) {
           showSitdown();
@@ -134,7 +160,7 @@
         const res = await fetch('https://script.google.com/macros/s/AKfycbxVVkIad26K7uwn36VfVO7xcCUe_OeGzC2flVEX3fKsDM9aCiftGdktNI0oLvH9Ho_w/exec');
         const messages = await res.json();
 
-        // Фильтруем "можем садиться", чтобы он не попал в обычные уведомления
+        // Исключаем "можем садиться" из обычных уведомлений
         const filtered = messages.filter(msg => !msg.toLowerCase().includes('можем садиться'));
 
         if (filtered.length > 0) {
