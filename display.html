@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+  <!-- trigger rebuild -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Входяшки</title>
@@ -46,7 +47,6 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    /* Таблица для фонового текста */
     #backgroundText table {
       margin: auto;
       font-family: monospace;
@@ -100,7 +100,6 @@
         const res = await fetch('https://script.google.com/macros/s/AKfycbxVVkIad26K7uwn36VfVO7xcCUe_OeGzC2flVEX3fKsDM9aCiftGdktNI0oLvH9Ho_w/exec?bg=1');
         const values = await res.json();
 
-        // Рендерим таблицу из массива значений
         let html = '<table>';
         for (const row of values) {
           html += '<tr>';
@@ -112,7 +111,6 @@
         html += '</table>';
         bgDiv.innerHTML = html;
 
-        // Проверяем наличие "можем садиться"
         const flatValues = values.flat().join(' ').toLowerCase();
         const containsSitdown = flatValues.includes('можем садиться');
 
@@ -160,7 +158,6 @@
         const res = await fetch('https://script.google.com/macros/s/AKfycbxVVkIad26K7uwn36VfVO7xcCUe_OeGzC2flVEX3fKsDM9aCiftGdktNI0oLvH9Ho_w/exec');
         const messages = await res.json();
 
-        // Исключаем "можем садиться" из обычных уведомлений
         const filtered = messages.filter(msg => !msg.toLowerCase().includes('можем садиться'));
 
         if (filtered.length > 0) {
