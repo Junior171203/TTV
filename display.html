@@ -6,12 +6,15 @@
   <title>Входяшки</title>
   <style>
     html, body {
-      margin: 0; padding: 0;
+      margin: 0;
+      padding: 0;
       height: 100%;
-      font-family: Arial, sans-serif;
+      font-family: monospace;
       background: black;
       color: #aaa;
+      overflow: hidden;
     }
+
     #backgroundText, #message {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -21,10 +24,12 @@
       text-align: center;
       white-space: pre-line;
     }
+
     #backgroundText {
       font-size: 2.5em;
       z-index: 1;
     }
+
     #message {
       font-size: 3.5em;
       z-index: 2;
@@ -33,6 +38,7 @@
       display: none;
       padding: 2rem;
     }
+
     #enableSound {
       position: absolute;
       top: 10px;
@@ -46,18 +52,21 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    /* Таблица для фонового текста */
+
     #backgroundText table {
       margin: auto;
       font-family: monospace;
       color: #aaa;
       border-collapse: collapse;
       user-select: none;
+      table-layout: fixed;
+      width: 100%;
     }
+
     #backgroundText td {
-      padding: 2px 10px;
-      border: 1px solid #555;
+      padding: 5px 15px;
       white-space: nowrap;
+      border: none;
     }
   </style>
 </head>
@@ -101,7 +110,6 @@
         const raw = await res.text();
         const values = raw.trim().split('\n').map(line => line.split(/\s+/));
 
-        // Рендерим таблицу
         let html = '<table>';
         for (const row of values) {
           html += '<tr>';
@@ -160,7 +168,6 @@
         const res = await fetch('https://script.google.com/macros/s/AKfycbxVVkIad26K7uwn36VfVO7xcCUe_OeGzC2flVEX3fKsDM9aCiftGdktNI0oLvH9Ho_w/exec');
         const messages = await res.json();
 
-        // Исключаем "можем садиться" из обычных уведомлений
         const filtered = messages.filter(msg => !msg.toLowerCase().includes('можем садиться'));
 
         if (filtered.length > 0) {
