@@ -6,78 +6,33 @@
   <title>Входяшки</title>
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       height: 100%;
-      font-family: 'Arial', sans-serif;
+      font-family: Arial, sans-serif;
       background: black;
-      color: #ddd;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 1.5em;
+      color: #aaa;
     }
-
-    #container {
-      display: flex;
-      gap: 30px;
-      justify-content: center;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      max-width: 1200px;
-      margin: 20px;
-    }
-
-    .column {
-      flex: 1 1 45%;
-      min-width: 300px;
-      padding: 10px;
-      background-color: #222;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-      margin: 10px;
-      color: #fff;
-    }
-
-    .column h2 {
-      text-align: center;
-      color: #FFD700;
-      font-size: 1.8em;
-      margin-bottom: 20px;
-    }
-
-    .row {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-    }
-
-    .row span {
-      display: inline-block;
-      width: 45%;
-      text-align: left;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    #message {
+    #backgroundText, #message {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      display: none;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
       justify-content: center;
       align-items: center;
+      text-align: center;
+      white-space: pre-line;
+    }
+    #backgroundText {
+      font-size: 2.5em;
+      z-index: 1;
+    }
+    #message {
       font-size: 3.5em;
+      z-index: 2;
       color: black;
       background: white;
-      z-index: 10;
+      display: none;
       padding: 2rem;
-      text-align: center;
     }
-
     #enableSound {
       position: absolute;
       top: 10px;
@@ -91,23 +46,26 @@
       border-radius: 5px;
       cursor: pointer;
     }
+    /* Стили для фонового текста */
+    #backgroundText {
+      font-family: monospace;
+      color: #aaa;
+      user-select: none;
+      white-space: pre-line;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
+  <div id="backgroundText">Загрузка...</div>
   <div id="message"></div>
   <button id="enableSound">🔊 Включить звук</button>
 
   <audio id="notifySound" src="mamont2.mp3"></audio>
   <audio id="sitdownSound" src="sitdown.mp3"></audio>
 
-  <div id="container">
-    <div class="column" id="col1">Загрузка...</div>
-    <div class="column" id="col2">Загрузка...</div>
-  </div>
-
   <script>
-    const col1 = document.getElementById('col1');
-    const col2 = document.getElementById('col2');
+    const bgDiv = document.getElementById('backgroundText');
     const msgDiv = document.getElementById('message');
     const notifySound = document.getElementById('notifySound');
     const sitdownSound = document.getElementById('sitdownSound');
@@ -115,7 +73,7 @@
 
     let queue = [];
     let showingNotification = false;
-    let lastIncludedSitdown = false;
+    let lastBgIncludedSitdown = false;
 
     soundBtn.addEventListener('click', () => {
       notifySound.play().then(() => {
@@ -135,39 +93,23 @@
     async function fetchBackground() {
       try {
         const res = await fetch('https://script.google.com/macros/s/AKfycbxVVkIad26K7uwn36VfVO7xcCUe_OeGzC2flVEX3fKsDM9aCiftGdktNI0oLvH9Ho_w/exec?action=background');
-        const raw = await res.text();
-        const lines = raw.trim().split('\n');
+        const text = await res.text();
 
-        // Разделим строки на две колонки
-        const half = Math.ceil(lines.length / 2);
-        const left = lines.slice(0, half).join('\n');
-        const right = lines.slice(half).join('\n');
+        // Отображаем текст как есть (уже отформатированный в Apps Script)
+        bgDiv.textContent = text;
 
-        col1.innerHTML = createColumnHtml(left);
-        col2.innerHTML = createColumnHtml(right);
+        // Проверяем наличие "можем садиться"
+        const containsSitdown = text.toLowerCase().includes('можем садиться');
 
-        const combined = lines.join(' ').toLowerCase();
-        const containsSitdown = combined.includes('можем садиться');
-
-        if (containsSitdown && !lastIncludedSitdown) {
+        if (containsSitdown && !lastBgIncludedSitdown) {
           showSitdown();
         }
 
-        lastIncludedSitdown = containsSitdown;
+        lastBgIncludedSitdown = containsSitdown;
       } catch (e) {
-        col1.textContent = 'Ошибка загрузки';
-        col2.textContent = '';
+        bgDiv.textContent = 'Ошибка загрузки данных';
         console.error(e);
       }
-    }
-
-    function createColumnHtml(data) {
-      const rows = data.split('\n').map(line => {
-        const parts = line.split(/\s{2,}/); // Разделим по нескольким пробелам
-        return `<div class="row"><span>${parts[0] || ''}</span><span>${parts[1] || ''}</span></div>`;
-      }).join('');
-
-      return rows;
     }
 
     function showSitdown() {
@@ -176,15 +118,18 @@
       showingNotification = true;
       msgDiv.textContent = 'МОЖЕМ САДИТЬСЯ';
       msgDiv.style.display = 'flex';
+      bgDiv.style.display = 'none';
       document.body.style.background = 'white';
       document.body.style.color = 'black';
 
       sitdownSound.play().catch(console.error);
 
+
       setTimeout(() => {
         msgDiv.style.display = 'none';
+        bgDiv.style.display = 'flex';
         document.body.style.background = 'black';
-        document.body.style.color = '#ddd';
+        document.body.style.color = '#aaa';
         showingNotification = false;
       }, 20000);
 
@@ -201,6 +146,7 @@
         const res = await fetch('https://script.google.com/macros/s/AKfycbxVVkIad26K7uwn36VfVO7xcCUe_OeGzC2flVEX3fKsDM9aCiftGdktNI0oLvH9Ho_w/exec');
         const messages = await res.json();
 
+        // Исключаем "можем садиться" из обычных уведомлений
         const filtered = messages.filter(msg => !msg.toLowerCase().includes('можем садиться'));
 
         if (filtered.length > 0) {
@@ -214,11 +160,12 @@
 
     function showNextMessage() {
       if (queue.length === 0) return;
-
       showingNotification = true;
+
       const message = queue.shift();
       msgDiv.textContent = message;
       msgDiv.style.display = 'flex';
+      bgDiv.style.display = 'none';
       document.body.style.background = 'white';
       document.body.style.color = 'black';
 
@@ -226,8 +173,9 @@
 
       setTimeout(() => {
         msgDiv.style.display = 'none';
+        bgDiv.style.display = 'flex';
         document.body.style.background = 'black';
-        document.body.style.color = '#ddd';
+        document.body.style.color = '#aaa';
         showingNotification = false;
 
         if (queue.length > 0) showNextMessage();
@@ -244,4 +192,4 @@
     setInterval(fetchMessages, 5000);
   </script>
 </body>
-</html>
+</html> 
