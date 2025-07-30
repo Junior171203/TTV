@@ -2,18 +2,16 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Входяшки</title>
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       height: 100%;
+      font-family: Arial, sans-serif;
       background: black;
       color: #aaa;
-      font-family: Arial, sans-serif;
     }
-
     #backgroundText, #message {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -21,22 +19,20 @@
       justify-content: center;
       align-items: center;
       text-align: center;
+      white-space: pre-line;
     }
-
     #backgroundText {
       font-size: 2.5em;
       z-index: 1;
     }
-
     #message {
       font-size: 3.5em;
       z-index: 2;
-      background: white;
       color: black;
+      background: white;
       display: none;
       padding: 2rem;
     }
-
     #enableSound {
       position: absolute;
       top: 10px;
@@ -50,7 +46,6 @@
       border-radius: 5px;
       cursor: pointer;
     }
-
     #backgroundText table {
       margin: auto;
       font-family: monospace;
@@ -58,7 +53,6 @@
       border-collapse: collapse;
       user-select: none;
     }
-
     #backgroundText td {
       padding: 2px 10px;
       border: 1px solid #555;
@@ -81,7 +75,9 @@
     const sitdownSound = document.getElementById('sitdownSound');
     const soundBtn = document.getElementById('enableSound');
 
-    let queue = [], showingNotification = false, lastBgIncludedSitdown = false;
+    let queue = [];
+    let showingNotification = false;
+    let lastBgIncludedSitdown = false;
 
     soundBtn.addEventListener('click', () => {
       notifySound.play().then(() => {
@@ -93,7 +89,7 @@
         sitdownSound.currentTime = 0;
         soundBtn.style.display = 'none';
       }).catch(e => {
-        alert("Браузер заблокировал звук. Нажмите ещё раз.");
+        alert("Браузер заблокировал звук. Попробуйте ещё раз.");
         console.error(e);
       });
     });
@@ -107,20 +103,33 @@
         const right = values.slice(10, 20);
 
         let html = '<table>';
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 8; i++) {
           html += '<tr>';
           html += `<td>${left[i] || ''}</td>`;
           html += `<td>${right[i] || ''}</td>`;
           html += '</tr>';
         }
+
+        // Z9
+        if (left[8]) {
+          html += `<tr><td colspan="2" style="text-align:center;">${left[8]}</td></tr>`;
+        }
+
+        // Z10
+        if (left[9]) {
+          html += `<tr><td colspan="2" style="text-align:center;">${left[9]}</td></tr>`;
+        }
+
         html += '</table>';
         bgDiv.innerHTML = html;
 
-        const flat = values.join(' ').toLowerCase();
-        const containsSitdown = flat.includes('можем садиться');
+        const flatValues = values.flat().join(' ').toLowerCase();
+        const containsSitdown = flatValues.includes('можем садиться');
+
         if (containsSitdown && !lastBgIncludedSitdown) {
           showSitdown();
         }
+
         lastBgIncludedSitdown = containsSitdown;
       } catch (e) {
         bgDiv.textContent = 'Ошибка загрузки данных';
@@ -130,12 +139,14 @@
 
     function showSitdown() {
       if (showingNotification) return;
+
       showingNotification = true;
       msgDiv.textContent = 'МОЖЕМ САДИТЬСЯ';
       msgDiv.style.display = 'flex';
       bgDiv.style.display = 'none';
       document.body.style.background = 'white';
       document.body.style.color = 'black';
+
       sitdownSound.play().catch(console.error);
 
       setTimeout(() => {
@@ -158,8 +169,8 @@
       try {
         const res = await fetch('https://script.google.com/macros/s/AKfycbxVVkIad26K7uwn36VfVO7xcCUe_OeGzC2flVEX3fKsDM9aCiftGdktNI0oLvH9Ho_w/exec');
         const messages = await res.json();
-
         const filtered = messages.filter(msg => !msg.toLowerCase().includes('можем садиться'));
+
         if (filtered.length > 0) {
           queue.push(...filtered);
           showNextMessage();
