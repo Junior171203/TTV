@@ -9,34 +9,44 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      font-family: monospace;
+      font-family: sans-serif;
       background: black;
-      color: #aaa;
-      overflow: hidden;
-    }
-
-    #backgroundText, #message {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      color: #ddd;
       display: flex;
       justify-content: center;
       align-items: center;
-      text-align: center;
+    }
+
+    #container {
+      display: flex;
+      gap: 80px;
+      justify-content: center;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .column {
+      min-width: 300px;
+      font-size: 2em;
+      line-height: 1.6;
       white-space: pre-line;
     }
 
-    #backgroundText {
-      font-size: 2.5em;
-      z-index: 1;
-    }
-
     #message {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: none;
+      justify-content: center;
+      align-items: center;
       font-size: 3.5em;
-      z-index: 2;
       color: black;
       background: white;
-      display: none;
+      z-index: 10;
       padding: 2rem;
+      text-align: center;
     }
 
     #enableSound {
@@ -52,34 +62,23 @@
       border-radius: 5px;
       cursor: pointer;
     }
-
-    #backgroundText table {
-      margin: auto;
-      font-family: monospace;
-      color: #aaa;
-      border-collapse: collapse;
-      user-select: none;
-      table-layout: fixed;
-      width: 100%;
-    }
-
-    #backgroundText td {
-      padding: 5px 15px;
-      white-space: nowrap;
-      border: none;
-    }
   </style>
 </head>
 <body>
-  <div id="backgroundText">Загрузка...</div>
   <div id="message"></div>
   <button id="enableSound">🔊 Включить звук</button>
 
   <audio id="notifySound" src="mamont2.mp3"></audio>
   <audio id="sitdownSound" src="sitdown.mp3"></audio>
 
+  <div id="container">
+    <div class="column" id="col1">Загрузка...</div>
+    <div class="column" id="col2">Загрузка...</div>
+  </div>
+
   <script>
-    const bgDiv = document.getElementById('backgroundText');
+    const col1 = document.getElementById('col1');
+    const col2 = document.getElementById('col2');
     const msgDiv = document.getElementById('message');
     const notifySound = document.getElementById('notifySound');
     const sitdownSound = document.getElementById('sitdownSound');
@@ -87,7 +86,7 @@
 
     let queue = [];
     let showingNotification = false;
-    let lastBgIncludedSitdown = false;
+    let lastIncludedSitdown = false;
 
     soundBtn.addEventListener('click', () => {
       notifySound.play().then(() => {
@@ -108,29 +107,27 @@
       try {
         const res = await fetch('https://script.google.com/macros/s/AKfycbxVVkIad26K7uwn36VfVO7xcCUe_OeGzC2flVEX3fKsDM9aCiftGdktNI0oLvH9Ho_w/exec?action=background');
         const raw = await res.text();
-        const values = raw.trim().split('\n').map(line => line.split(/\s+/));
+        const lines = raw.trim().split('\n');
 
-        let html = '<table>';
-        for (const row of values) {
-          html += '<tr>';
-          for (const cell of row) {
-            html += `<td>${cell || ''}</td>`;
-          }
-          html += '</tr>';
-        }
-        html += '</table>';
-        bgDiv.innerHTML = html;
+        // Разделим строки на две колонки
+        const half = Math.ceil(lines.length / 2);
+        const left = lines.slice(0, half).join('\n');
+        const right = lines.slice(half).join('\n');
 
-        const flatValues = values.flat().join(' ').toLowerCase();
-        const containsSitdown = flatValues.includes('можем садиться');
+        col1.textContent = left;
+        col2.textContent = right;
 
-        if (containsSitdown && !lastBgIncludedSitdown) {
+        const combined = lines.join(' ').toLowerCase();
+        const containsSitdown = combined.includes('можем садиться');
+
+        if (containsSitdown && !lastIncludedSitdown) {
           showSitdown();
         }
 
-        lastBgIncludedSitdown = containsSitdown;
+        lastIncludedSitdown = containsSitdown;
       } catch (e) {
-        bgDiv.textContent = 'Ошибка загрузки данных';
+        col1.textContent = 'Ошибка загрузки';
+        col2.textContent = '';
         console.error(e);
       }
     }
@@ -141,7 +138,6 @@
       showingNotification = true;
       msgDiv.textContent = 'МОЖЕМ САДИТЬСЯ';
       msgDiv.style.display = 'flex';
-      bgDiv.style.display = 'none';
       document.body.style.background = 'white';
       document.body.style.color = 'black';
 
@@ -149,9 +145,8 @@
 
       setTimeout(() => {
         msgDiv.style.display = 'none';
-        bgDiv.style.display = 'flex';
         document.body.style.background = 'black';
-        document.body.style.color = '#aaa';
+        document.body.style.color = '#ddd';
         showingNotification = false;
       }, 20000);
 
@@ -181,12 +176,11 @@
 
     function showNextMessage() {
       if (queue.length === 0) return;
-      showingNotification = true;
 
+      showingNotification = true;
       const message = queue.shift();
       msgDiv.textContent = message;
       msgDiv.style.display = 'flex';
-      bgDiv.style.display = 'none';
       document.body.style.background = 'white';
       document.body.style.color = 'black';
 
@@ -194,9 +188,8 @@
 
       setTimeout(() => {
         msgDiv.style.display = 'none';
-        bgDiv.style.display = 'flex';
         document.body.style.background = 'black';
-        document.body.style.color = '#aaa';
+        document.body.style.color = '#ddd';
         showingNotification = false;
 
         if (queue.length > 0) showNextMessage();
