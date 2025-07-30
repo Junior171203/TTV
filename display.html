@@ -97,10 +97,11 @@
 
     async function fetchBackground() {
       try {
-        const res = await fetch('https://script.google.com/macros/s/AKfycbxVVkIad26K7uwn36VfVO7xcCUe_OeGzC2flVEX3fKsDM9aCiftGdktNI0oLvH9Ho_w/exec?bg=1');
-        const values = await res.json();
+        const res = await fetch('https://script.google.com/macros/s/AKfycbxVVkIad26K7uwn36VfVO7xcCUe_OeGzC2flVEX3fKsDM9aCiftGdktNI0oLvH9Ho_w/exec?action=background');
+        const raw = await res.text();
+        const values = raw.trim().split('\n').map(line => line.split(/\s+/));
 
-        // Рендерим таблицу из массива значений
+        // Рендерим таблицу
         let html = '<table>';
         for (const row of values) {
           html += '<tr>';
@@ -112,7 +113,6 @@
         html += '</table>';
         bgDiv.innerHTML = html;
 
-        // Проверяем наличие "можем садиться"
         const flatValues = values.flat().join(' ').toLowerCase();
         const containsSitdown = flatValues.includes('можем садиться');
 
