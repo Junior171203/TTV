@@ -9,27 +9,56 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      font-family: sans-serif;
+      font-family: 'Arial', sans-serif;
       background: black;
       color: #ddd;
       display: flex;
       justify-content: center;
       align-items: center;
+      font-size: 1.5em;
     }
 
     #container {
       display: flex;
-      gap: 80px;
+      gap: 30px;
       justify-content: center;
       align-items: flex-start;
       flex-wrap: wrap;
+      max-width: 1200px;
+      margin: 20px;
     }
 
     .column {
+      flex: 1 1 45%;
       min-width: 300px;
-      font-size: 2em;
-      line-height: 1.6;
-      white-space: pre-line;
+      padding: 10px;
+      background-color: #222;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      margin: 10px;
+      color: #fff;
+    }
+
+    .column h2 {
+      text-align: center;
+      color: #FFD700;
+      font-size: 1.8em;
+      margin-bottom: 20px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+    }
+
+    .row span {
+      display: inline-block;
+      width: 45%;
+      text-align: left;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
     #message {
@@ -114,8 +143,8 @@
         const left = lines.slice(0, half).join('\n');
         const right = lines.slice(half).join('\n');
 
-        col1.textContent = left;
-        col2.textContent = right;
+        col1.innerHTML = createColumnHtml(left);
+        col2.innerHTML = createColumnHtml(right);
 
         const combined = lines.join(' ').toLowerCase();
         const containsSitdown = combined.includes('можем садиться');
@@ -130,6 +159,15 @@
         col2.textContent = '';
         console.error(e);
       }
+    }
+
+    function createColumnHtml(data) {
+      const rows = data.split('\n').map(line => {
+        const parts = line.split(/\s{2,}/); // Разделим по нескольким пробелам
+        return `<div class="row"><span>${parts[0] || ''}</span><span>${parts[1] || ''}</span></div>`;
+      }).join('');
+
+      return rows;
     }
 
     function showSitdown() {
