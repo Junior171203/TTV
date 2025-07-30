@@ -51,8 +51,27 @@
       font-family: monospace;
       color: #aaa;
       user-select: none;
-      white-space: pre-line;
-      line-height: 1.5;
+    }
+    
+    /* Стили для двух столбцов */
+    .two-columns {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 100px; /* Отступ между столбцами */
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .left-column, .right-column {
+      flex: 1;
+      text-align: left;
+    }
+    
+    .column-item {
+      padding: 8px 0;
+      line-height: 1.4;
+      font-size: 1.2em;
     }
   </style>
 </head>
@@ -95,8 +114,39 @@
         const res = await fetch('https://script.google.com/macros/s/AKfycbxVVkIad26K7uwn36VfVO7xcCUe_OeGzC2flVEX3fKsDM9aCiftGdktNI0oLvH9Ho_w/exec?action=background');
         const text = await res.text();
 
-        // Отображаем текст как есть (уже отформатированный в Apps Script)
-        bgDiv.textContent = text;
+        // Разделяем текст на строки и создаем два столбца
+        const lines = text.split('\n');
+        let leftColumn = [];
+        let rightColumn = [];
+        
+        lines.forEach(line => {
+          const parts = line.split(' ');
+          if (parts.length >= 2) {
+            // Первая часть - левый столбец, остальное - правый
+            leftColumn.push(parts[0]);
+            rightColumn.push(parts.slice(1).join(' '));
+          } else {
+            // Если одна часть, добавляем в левый столбец
+            leftColumn.push(line);
+            rightColumn.push('');
+          }
+        });
+
+        // Создаем HTML с двумя столбцами
+        let html = '<div class="two-columns">';
+        html += '<div class="left-column">';
+        leftColumn.forEach(item => {
+          html += `<div class="column-item">${item}</div>`;
+        });
+        html += '</div>';
+        html += '<div class="right-column">';
+        rightColumn.forEach(item => {
+          html += `<div class="column-item">${item}</div>`;
+        });
+        html += '</div>';
+        html += '</div>';
+        
+        bgDiv.innerHTML = html;
 
         // Проверяем наличие "можем садиться"
         const containsSitdown = text.toLowerCase().includes('можем садиться');
