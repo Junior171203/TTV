@@ -2,13 +2,13 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Входяшки</title>
   <style>
     html, body {
       margin: 0; padding: 0;
       height: 100%;
-      font-family: Arial, sans-serif;
+      font-family: monospace, monospace;
       background: black;
       color: #aaa;
     }
@@ -20,19 +20,21 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-      white-space: pre-line;
+      white-space: pre-wrap;
     }
     #backgroundText {
-      font-size: 2.5em;
+      font-size: 2em;
       z-index: 1;
+      user-select: none;
     }
     #message {
-      font-size: 3.5em;
+      font-size: 3em;
       z-index: 2;
       color: black;
       background: white;
       display: none;
       padding: 2rem;
+      user-select: none;
     }
     #enableSound {
       position: absolute;
@@ -48,21 +50,24 @@
       cursor: pointer;
     }
     #backgroundText table {
-      margin: 10px auto;
-      font-family: monospace;
+      margin: 15px auto;
+      font-family: monospace, monospace;
       color: #aaa;
       border-collapse: collapse;
       user-select: none;
+      max-width: 90vw;
     }
     #backgroundText td {
-      padding: 2px 10px;
+      padding: 5px 15px;
       border: 1px solid #555;
       white-space: nowrap;
     }
   </style>
 </head>
 <body>
-  <div id="backgroundText">Загрузка...</div>
+  <div id="backgroundText">
+    <!-- Здесь будет динамическая таблица -->
+  </div>
   <div id="message"></div>
   <button id="enableSound">🔊 Включить звук</button>
 
@@ -102,31 +107,31 @@
 
         const left = values.slice(0, 10);
         const right = values.slice(10, 20);
-        const totalTableRows = values.slice(20); // Остаток — это строки таблицы ТОТАЛ
+        const totalRows = values.slice(20);
 
+        // Основная таблица с двумя колонками
         let html = '<table>';
         for (let i = 0; i < 8; i++) {
           html += '<tr>';
-          html += `<td>${left[i] || ''}</td>`;
-          html += `<td>${right[i] || ''}</td>`;
+          html += `<td>${sanitize(left[i] || '')}</td>`;
+          html += `<td>${sanitize(right[i] || '')}</td>`;
           html += '</tr>';
         }
-
         if (left[8]) {
-          html += `<tr><td colspan="2" style="text-align:center;">${left[8]}</td></tr>`;
+          html += `<tr><td colspan="2" style="text-align:center;">${sanitize(left[8])}</td></tr>`;
         }
         if (left[9]) {
-          html += `<tr><td colspan="2" style="text-align:center;">${left[9]}</td></tr>`;
+          html += `<tr><td colspan="2" style="text-align:center;">${sanitize(left[9])}</td></tr>`;
         }
         html += '</table>';
 
-        // Добавляем таблицу из ТОТАЛ
-        if (totalTableRows.length > 0) {
+        // Таблица ТОТАЛ под основной, 4 столбца
+        if (totalRows.length > 0) {
           html += '<table>';
-          for (let i = 0; i < totalTableRows.length; i += 4) {
+          for (let i = 0; i < totalRows.length; i += 4) {
             html += '<tr>';
             for (let j = 0; j < 4; j++) {
-              html += `<td>${totalTableRows[i + j] || ''}</td>`;
+              html += `<td>${sanitize(totalRows[i + j] || '')}</td>`;
             }
             html += '</tr>';
           }
@@ -146,6 +151,11 @@
         bgDiv.textContent = 'Ошибка загрузки данных';
         console.error(e);
       }
+    }
+
+    // Очистка текста от лишних запятых и пробелов в конце
+    function sanitize(str) {
+      return str.replace(/,+/g, '').trim();
     }
 
     function showSitdown() {
