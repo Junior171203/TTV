@@ -59,20 +59,11 @@
       border: 1px solid #555;
       white-space: nowrap;
     }
-    #extraText {
-      margin-top: 1rem;
-      font-size: 1.5em;
-      color: #aaa;
-      user-select: none;
-      text-align: center;
-      width: 100%;
-    }
   </style>
 </head>
 <body>
   <div id="backgroundText">
     Загрузка...
-    <div id="extraText"></div>
   </div>
   <div id="message"></div>
   <button id="enableSound">🔊 Включить звук</button>
@@ -83,7 +74,6 @@
   <script>
     const bgDiv = document.getElementById('backgroundText');
     const msgDiv = document.getElementById('message');
-    const extraTextDiv = document.getElementById('extraText');
     const notifySound = document.getElementById('notifySound');
     const sitdownSound = document.getElementById('sitdownSound');
     const soundBtn = document.getElementById('enableSound');
@@ -112,14 +102,16 @@
         const res = await fetch('https://script.google.com/macros/s/AKfycbxVVkIad26K7uwn36VfVO7xcCUe_OeGzC2flVEX3fKsDM9aCiftGdktNI0oLvH9Ho_w/exec?bg=1');
         const values = await res.json();
 
-        extraTextDiv.textContent = '';
-
         let html = '<table>';
 
         values.forEach(row => {
           html += '<tr>';
           if (Array.isArray(row)) {
-            row.forEach(cell => {
+            let filteredRow = row.slice();
+            while (filteredRow.length && filteredRow[filteredRow.length - 1] === "") {
+              filteredRow.pop();
+            }
+            filteredRow.forEach(cell => {
               html += `<td>${cell}</td>`;
             });
           } else {
@@ -130,9 +122,6 @@
 
         html += '</table>';
         bgDiv.innerHTML = html;
-        bgDiv.appendChild(extraTextDiv);
-
-        extraTextDiv.textContent = 'Дополнительный текст под таблицей, выровнен по центру';
 
         const flatValues = values.flat().join(' ').toLowerCase();
         const containsSitdown = flatValues.includes('можем садиться');
