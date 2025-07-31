@@ -9,8 +9,16 @@
       margin: 0; padding: 0;
       height: 100%;
       font-family: Arial, sans-serif;
-      background: black;
-      color: #aaa;
+
+      background:
+        radial-gradient(circle, #0b1e3d 40%, #000000 100%),
+        radial-gradient(circle at 20% 30%, #fff 1px, transparent 2px),
+        radial-gradient(circle at 80% 70%, #fff 1px, transparent 2px),
+        radial-gradient(circle at 50% 50%, #fff 1px, transparent 2px);
+      background-repeat: no-repeat;
+      background-size: cover;
+
+      color: #a0e7ff;
     }
     #backgroundText, #message {
       position: fixed;
@@ -47,24 +55,54 @@
       border-radius: 5px;
       cursor: pointer;
     }
+
+    /* Таблица */
     #backgroundText table {
       margin: auto;
       font-family: monospace;
-      color: #aaa;
       border-collapse: collapse;
       user-select: none;
+      /* базовый цвет текста */
+      color: #a0e7ff;
     }
     #backgroundText td {
       padding: 2px 10px;
       border: 1px solid #555;
       white-space: nowrap;
+      color: #a0e7ff;
+      text-shadow: none;
+      position: relative;
+      transition: background-color 0.3s ease;
+    }
+
+    /* Заголовки */
+    #backgroundText tr:first-child td {
+      font-weight: bold;
+      color: #00ff88;
+      text-shadow: 0 0 12px #0f0, 0 0 20px #0f0;
+      animation: pulseGlow 2s infinite alternate;
+    }
+
+    /* Медали — без анимаций */
+    #backgroundText td:has(> .medal),
+    #backgroundText td:contains("🥇"),
+    #backgroundText td:contains("🥈"),
+    #backgroundText td:contains("🥉") {
+      animation: none !important;
+      color: #a0e7ff;
+      text-shadow: none;
+    }
+
+    /* Анимация бегущей подсветки по строкам */
+    @keyframes rowHighlight {
+      0%   { background-color: transparent; }
+      50%  { background-color: rgba(0, 255, 255, 0.3); }
+      100% { background-color: transparent; }
     }
   </style>
 </head>
 <body>
-  <div id="backgroundText">
-    Загрузка...
-  </div>
+  <div id="backgroundText">Загрузка...</div>
   <div id="message"></div>
   <button id="enableSound">🔊 Включить звук</button>
 
@@ -123,6 +161,8 @@
         html += '</table>';
         bgDiv.innerHTML = html;
 
+        applyRowHighlightAnimation();
+
         const flatValues = values.flat().join(' ').toLowerCase();
         const containsSitdown = flatValues.includes('можем садиться');
 
@@ -135,6 +175,14 @@
         bgDiv.textContent = 'Ошибка загрузки данных: ' + e.message;
         console.error(e);
       }
+    }
+
+    function applyRowHighlightAnimation() {
+      const rows = bgDiv.querySelectorAll('table tr');
+      rows.forEach((row, index) => {
+        row.style.animation = `rowHighlight 3s ease-in-out infinite`;
+        row.style.animationDelay = `${index * 0.5}s`;
+      });
     }
 
     function showSitdown() {
