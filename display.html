@@ -2,13 +2,13 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Входяшки</title>
   <style>
     html, body {
       margin: 0; padding: 0;
       height: 100%;
-      font-family: monospace, monospace;
+      font-family: Arial, sans-serif;
       background: black;
       color: #aaa;
     }
@@ -16,25 +16,23 @@
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
-      white-space: pre-wrap;
+      white-space: pre-line;
+      flex-direction: column;
     }
     #backgroundText {
-      font-size: 2em;
+      font-size: 2.5em;
       z-index: 1;
-      user-select: none;
     }
     #message {
-      font-size: 3em;
+      font-size: 3.5em;
       z-index: 2;
       color: black;
       background: white;
       display: none;
       padding: 2rem;
-      user-select: none;
     }
     #enableSound {
       position: absolute;
@@ -50,23 +48,29 @@
       cursor: pointer;
     }
     #backgroundText table {
-      margin: 15px auto;
-      font-family: monospace, monospace;
+      margin: auto;
+      font-family: monospace;
       color: #aaa;
       border-collapse: collapse;
       user-select: none;
-      max-width: 90vw;
     }
     #backgroundText td {
-      padding: 5px 15px;
+      padding: 2px 10px;
       border: 1px solid #555;
       white-space: nowrap;
+    }
+    #extraText {
+      margin-top: 1rem;
+      font-size: 1.5em;
+      color: #aaa;
+      user-select: none;
     }
   </style>
 </head>
 <body>
   <div id="backgroundText">
-    <!-- Здесь будет динамическая таблица -->
+    Загрузка...
+    <div id="extraText"></div>
   </div>
   <div id="message"></div>
   <button id="enableSound">🔊 Включить звук</button>
@@ -77,6 +81,7 @@
   <script>
     const bgDiv = document.getElementById('backgroundText');
     const msgDiv = document.getElementById('message');
+    const extraTextDiv = document.getElementById('extraText');
     const notifySound = document.getElementById('notifySound');
     const sitdownSound = document.getElementById('sitdownSound');
     const soundBtn = document.getElementById('enableSound');
@@ -105,57 +110,40 @@
         const res = await fetch('https://script.google.com/macros/s/AKfycbxVVkIad26K7uwn36VfVO7xcCUe_OeGzC2flVEX3fKsDM9aCiftGdktNI0oLvH9Ho_w/exec?bg=1');
         const values = await res.json();
 
-        const left = values.slice(0, 10);
-        const right = values.slice(10, 20);
-        const totalRows = values.slice(20);
+        // Очищаем таблицу и дополнительный текст
+        extraTextDiv.textContent = '';
 
-        // Основная таблица с двумя колонками
+        // Формируем таблицу из массива строк
         let html = '<table>';
-        for (let i = 0; i < 8; i++) {
+
+        values.forEach(line => {
           html += '<tr>';
-          html += `<td>${sanitize(left[i] || '')}</td>`;
-          html += `<td>${sanitize(right[i] || '')}</td>`;
+          const cells = line.split(',');
+          cells.forEach(cell => {
+            html += `<td>${cell.trim()}</td>`;
+          });
           html += '</tr>';
-        }
-        if (left[8]) {
-          html += `<tr><td colspan="2" style="text-align:center;">${sanitize(left[8])}</td></tr>`;
-        }
-        if (left[9]) {
-          html += `<tr><td colspan="2" style="text-align:center;">${sanitize(left[9])}</td></tr>`;
-        }
+        });
+
         html += '</table>';
-
-        // Таблица ТОТАЛ под основной, 4 столбца
-        if (totalRows.length > 0) {
-          html += '<table>';
-          for (let i = 0; i < totalRows.length; i += 4) {
-            html += '<tr>';
-            for (let j = 0; j < 4; j++) {
-              html += `<td>${sanitize(totalRows[i + j] || '')}</td>`;
-            }
-            html += '</tr>';
-          }
-          html += '</table>';
-        }
-
         bgDiv.innerHTML = html;
+        bgDiv.appendChild(extraTextDiv); // добавляем extraText обратно в #backgroundText
 
-        const flatValues = values.flat().join(' ').toLowerCase();
+        // Добавим дополнительный текст внизу (пример, можно заменить на свой)
+        extraTextDiv.textContent = 'Дополнительный текст под таблицей, выровнен по центру';
+
+        const flatValues = values.join(' ').toLowerCase();
         const containsSitdown = flatValues.includes('можем садиться');
+
         if (containsSitdown && !lastBgIncludedSitdown) {
           showSitdown();
         }
 
         lastBgIncludedSitdown = containsSitdown;
       } catch (e) {
-        bgDiv.textContent = 'Ошибка загрузки данных';
+        bgDiv.textContent = 'Ошибка загрузки данных: ' + e.message;
         console.error(e);
       }
-    }
-
-    // Очистка текста от лишних запятых и пробелов в конце
-    function sanitize(str) {
-      return str.replace(/,+/g, '').trim();
     }
 
     function showSitdown() {
