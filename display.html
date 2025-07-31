@@ -16,6 +16,7 @@
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
@@ -47,7 +48,7 @@
       cursor: pointer;
     }
     #backgroundText table {
-      margin: auto;
+      margin: 10px auto;
       font-family: monospace;
       color: #aaa;
       border-collapse: collapse;
@@ -101,6 +102,7 @@
 
         const left = values.slice(0, 10);
         const right = values.slice(10, 20);
+        const totalTableRows = values.slice(20); // Остаток — это строки таблицы ТОТАЛ
 
         let html = '<table>';
         for (let i = 0; i < 8; i++) {
@@ -110,22 +112,31 @@
           html += '</tr>';
         }
 
-        // Z9
         if (left[8]) {
           html += `<tr><td colspan="2" style="text-align:center;">${left[8]}</td></tr>`;
         }
-
-        // Z10
         if (left[9]) {
           html += `<tr><td colspan="2" style="text-align:center;">${left[9]}</td></tr>`;
         }
-
         html += '</table>';
+
+        // Добавляем таблицу из ТОТАЛ
+        if (totalTableRows.length > 0) {
+          html += '<table>';
+          for (let i = 0; i < totalTableRows.length; i += 4) {
+            html += '<tr>';
+            for (let j = 0; j < 4; j++) {
+              html += `<td>${totalTableRows[i + j] || ''}</td>`;
+            }
+            html += '</tr>';
+          }
+          html += '</table>';
+        }
+
         bgDiv.innerHTML = html;
 
         const flatValues = values.flat().join(' ').toLowerCase();
         const containsSitdown = flatValues.includes('можем садиться');
-
         if (containsSitdown && !lastBgIncludedSitdown) {
           showSitdown();
         }
