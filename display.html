@@ -19,6 +19,7 @@
       background-size: cover;
 
       color: #a0e7ff;
+      transition: background 0.5s ease, color 0.5s ease;
     }
     #backgroundText, #message {
       position: fixed;
@@ -37,10 +38,15 @@
     #message {
       font-size: 3.5em;
       z-index: 2;
-      color: black;
-      background: white;
+      color: #073763; /* тёмно-синий */
+      background: linear-gradient(135deg, #e0f0ff, #a0c8ff);
+      box-shadow:
+        0 4px 15px rgba(0, 60, 120, 0.4);
+      border-radius: 12px;
+      padding: 3rem 4rem;
       display: none;
-      padding: 2rem;
+      user-select: none;
+      line-height: 1.2;
     }
     #enableSound {
       position: absolute;
@@ -120,6 +126,14 @@
     let showingNotification = false;
     let lastBgIncludedSitdown = false;
 
+    // Исходный фон и цвет текста для восстановления
+    const defaultBackground = 
+      'radial-gradient(circle, #0b1e3d 40%, #000000 100%),' +
+      'radial-gradient(circle at 20% 30%, #fff 1px, transparent 2px),' +
+      'radial-gradient(circle at 80% 70%, #fff 1px, transparent 2px),' +
+      'radial-gradient(circle at 50% 50%, #fff 1px, transparent 2px)';
+    const defaultColor = '#a0e7ff';
+
     soundBtn.addEventListener('click', () => {
       notifySound.play().then(() => {
         notifySound.pause();
@@ -192,16 +206,21 @@
       msgDiv.textContent = 'МОЖЕМ САДИТЬСЯ';
       msgDiv.style.display = 'flex';
       bgDiv.style.display = 'none';
-      document.body.style.background = 'white';
-      document.body.style.color = 'black';
+
+      // Красивый фон уведомления и цвет текста
+      document.body.style.background = 'linear-gradient(135deg, #e0f0ff, #a0c8ff)';
+      document.body.style.color = '#073763';
 
       sitdownSound.play().catch(console.error);
 
       setTimeout(() => {
         msgDiv.style.display = 'none';
         bgDiv.style.display = 'flex';
-        document.body.style.background = 'black';
-        document.body.style.color = '#aaa';
+
+        // Восстановление исходного фона и цвета
+        document.body.style.background = defaultBackground;
+        document.body.style.color = defaultColor;
+
         showingNotification = false;
       }, 20000);
 
@@ -236,16 +255,21 @@
       msgDiv.textContent = message;
       msgDiv.style.display = 'flex';
       bgDiv.style.display = 'none';
-      document.body.style.background = 'white';
-      document.body.style.color = 'black';
+
+      // Красивый фон уведомления и цвет текста
+      document.body.style.background = 'linear-gradient(135deg, #e0f0ff, #a0c8ff)';
+      document.body.style.color = '#073763';
 
       notifySound.play().catch(console.error);
 
       setTimeout(() => {
         msgDiv.style.display = 'none';
         bgDiv.style.display = 'flex';
-        document.body.style.background = 'black';
-        document.body.style.color = '#aaa';
+
+        // Восстановление исходного фона и цвета
+        document.body.style.background = defaultBackground;
+        document.body.style.color = defaultColor;
+
         showingNotification = false;
 
         if (queue.length > 0) showNextMessage();
