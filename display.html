@@ -114,12 +114,15 @@
 
   <audio id="notifySound" src="mamont2.mp3"></audio>
   <audio id="sitdownSound" src="sitdown.mp3"></audio>
+  <!-- ДОБАВЛЕНО: звук для денежного уведомления -->
+  <audio id="moneySound" src="money.mp3"></audio>
 
   <script>
     const bgDiv = document.getElementById('backgroundText');
     const msgDiv = document.getElementById('message');
     const notifySound = document.getElementById('notifySound');
     const sitdownSound = document.getElementById('sitdownSound');
+    const moneySound  = document.getElementById('moneySound'); // NEW
     const soundBtn = document.getElementById('enableSound');
 
     let queue = [];
@@ -142,6 +145,10 @@
       }).then(() => {
         sitdownSound.pause();
         sitdownSound.currentTime = 0;
+        return moneySound.play(); // NEW: «разбудить» money.mp3
+      }).then(() => {
+        moneySound.pause();
+        moneySound.currentTime = 0;
         soundBtn.style.display = 'none';
       }).catch(e => {
         alert("Браузер заблокировал звук. Попробуйте ещё раз.");
@@ -230,13 +237,57 @@
       }, 5000);
     }
 
+    // ДОБАВЛЕНО: показ денежного уведомления "Мамонт нам занес ...р" со звуком money.mp3
+    function showDelta(deltaText) {
+      if (showingNotification) return;
+      showingNotification = true;
+
+      const pure = String(deltaText).replace(/^DELTA:/, '').trim(); // "+400 000" или "−250 000"
+      const banner = `Мамонт нам занес ${pure}р`;
+
+      msgDiv.textContent = banner;
+      msgDiv.style.display = 'flex';
+      bgDiv.style.display = 'none';
+
+      document.body.style.background = 'linear-gradient(135deg, #e0f0ff, #a0c8ff)';
+      document.body.style.color = '#073763';
+
+      if (pure.startsWith('+')) {
+        msgDiv.style.boxShadow = '0 4px 18px rgba(0, 160, 0, 0.45)';
+      } else {
+        msgDiv.style.boxShadow = '0 4px 18px rgba(200, 0, 0, 0.45)';
+      }
+
+      moneySound.currentTime = 0;
+      moneySound.play().catch(console.error);
+
+      setTimeout(() => {
+        msgDiv.style.display = 'none';
+        bgDiv.style.display = 'flex';
+
+        document.body.style.background = defaultBackground;
+        document.body.style.color = defaultColor;
+        msgDiv.style.boxShadow = '0 4px 15px rgba(0, 60, 120, 0.4)';
+
+        showingNotification = false;
+
+        // продолжим очередь, как в showNextMessage
+        if (queue.length > 0) showNextMessage();
+      }, 20000);
+
+      setTimeout(() => {
+        moneySound.pause();
+        moneySound.currentTime = 0;
+      }, 20000);
+    }
+
     async function fetchMessages() {
       if (showingNotification || queue.length > 0) return;
 
       try {
         const res = await fetch('https://script.google.com/macros/s/AKfycbxVVkIad26K7uwn36VfVO7xcCUe_OeGzC2flVEX3fKsDM9aCiftGdktNI0oLvH9Ho_w/exec');
         const messages = await res.json();
-        const filtered = messages.filter(msg => !msg.toLowerCase().includes('можем садиться'));
+        const filtered = messages.filter(msg => !String(msg).toLowerCase().includes('можем садиться'));
 
         if (filtered.length > 0) {
           queue.push(...filtered);
@@ -249,9 +300,17 @@
 
     function showNextMessage() {
       if (queue.length === 0) return;
-      showingNotification = true;
 
       const message = queue.shift();
+
+      // ДОБАВЛЕНО: перехват спец-сообщения DELTA:+...
+      if (String(message).startsWith('DELTA:')) {
+        showDelta(String(message));
+        return;
+      }
+
+      showingNotification = true;
+
       msgDiv.textContent = message;
       msgDiv.style.display = 'flex';
       bgDiv.style.display = 'none';
