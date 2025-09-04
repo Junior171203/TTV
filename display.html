@@ -115,7 +115,7 @@
   <audio id="notifySound" src="mamont2.mp3"></audio>
   <audio id="sitdownSound" src="sitdown.mp3"></audio>
   <!-- ДОБАВЛЕНО: звук для денежного уведомления -->
-  <audio id="moneySound" src="money.mp3"></audio>
+  <audio id="moneySound" src="money2.mp3"></audio>
 
   <script>
     const bgDiv = document.getElementById('backgroundText');
@@ -145,7 +145,7 @@
       }).then(() => {
         sitdownSound.pause();
         sitdownSound.currentTime = 0;
-        return moneySound.play(); // NEW: «разбудить» money.mp3
+        return moneySound.play(); // NEW: «разбудить» money2.mp3
       }).then(() => {
         moneySound.pause();
         moneySound.currentTime = 0;
@@ -243,7 +243,7 @@
       showingNotification = true;
 
       const pure = String(deltaText).replace(/^DELTA:/, '').trim(); // "+400 000" или "−250 000"
-      const banner = `Мамонт нам занес ${pure}р`;
+      const banner = `Занос от мамонта ${pure}р`;
 
       msgDiv.textContent = banner;
       msgDiv.style.display = 'flex';
@@ -346,3 +346,4 @@
   </script>
 </body>
 </html>
+
