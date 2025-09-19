@@ -13,15 +13,16 @@
         height: 100%;
         font-family: Arial, sans-serif;
 
+        /* НОВАЯ ПАЛИТРА ФОНА (слива + розовое свечение) */
         background:
-          radial-gradient(circle, #0b1e3d 40%, #000000 100%),
-          radial-gradient(circle at 20% 30%, #fff 1px, transparent 2px),
-          radial-gradient(circle at 80% 70%, #fff 1px, transparent 2px),
-          radial-gradient(circle at 50% 50%, #fff 1px, transparent 2px);
+          radial-gradient(circle, #2a0e2a 40%, #0a050a 100%),
+          radial-gradient(circle at 20% 30%, #ff9bd8 1px, transparent 2px),
+          radial-gradient(circle at 80% 70%, #ff9bd8 1px, transparent 2px),
+          radial-gradient(circle at 50% 50%, #ff9bd8 1px, transparent 2px);
         background-repeat: no-repeat;
         background-size: cover;
 
-        color: #a0e7ff;
+        color: #eaf3ff; /* общий текст */
         transition: background 0.5s ease, color 0.5s ease;
       }
 
@@ -48,9 +49,11 @@
       #message {
         font-size: 3.5em;
         z-index: 2;
-        color: #073763; /* тёмно-синий */
-        background: linear-gradient(135deg, #e0f0ff, #a0c8ff);
-        box-shadow: 0 4px 15px rgba(0, 60, 120, 0.4);
+
+        /* баннер уведомлений — цвета прежние */
+        color: #172333;
+        background: linear-gradient(135deg, #c8f1ff, #d7c4ff);
+        box-shadow: 0 4px 15px rgba(10, 60, 120, 0.45);
         border-radius: 12px;
         padding: 3rem 4rem;
         display: none;
@@ -78,25 +81,29 @@
         font-family: monospace;
         border-collapse: collapse;
         user-select: none;
-        /* базовый цвет текста */
-        color: #a0e7ff;
+        color: #eaf3ff;
       }
 
       #backgroundText td {
         padding: 2px 10px;
-        border: 1px solid #555;
+        border: 1px solid #4d5a70;
         white-space: nowrap;
-        color: #a0e7ff;
+        color: #eaf3ff;
         text-shadow: none;
         position: relative;
         transition: background-color 0.3s ease;
       }
 
+      /* Выравнивание: заголовки по центру, первый столбец (U2:U8) — влево, остальные по центру */
+      #backgroundText tr:first-child td { text-align: center; }
+      #backgroundText td:first-child { text-align: left; }
+      #backgroundText tr td:not(:first-child) { text-align: center; }
+
       /* Заголовки */
       #backgroundText tr:first-child td {
         font-weight: bold;
-        color: #00ff88;
-        text-shadow: 0 0 12px #0f0, 0 0 20px #0f0;
+        color: #8affd0;
+        text-shadow: 0 0 12px rgba(138, 255, 208, 0.8), 0 0 20px rgba(126, 249, 255, 0.6);
         animation: pulseGlow 2s infinite alternate;
       }
 
@@ -106,21 +113,15 @@
       #backgroundText td:contains("🥈"),
       #backgroundText td:contains("🥉") {
         animation: none !important;
-        color: #a0e7ff;
+        color: #eaf3ff;
         text-shadow: none;
       }
 
-      /* Анимация бегущей подсветки по строкам */
+      /* Подсветка строк */
       @keyframes rowHighlight {
-        0% {
-          background-color: transparent;
-        }
-        50% {
-          background-color: rgba(0, 255, 255, 0.3);
-        }
-        100% {
-          background-color: transparent;
-        }
+        0%   { background-color: transparent; }
+        50%  { background-color: rgba(126, 249, 255, 0.22); }
+        100% { background-color: transparent; }
       }
     </style>
   </head>
@@ -132,7 +133,6 @@
 
     <audio id="notifySound" src="mamont2.mp3"></audio>
     <audio id="sitdownSound" src="sitdown.mp3"></audio>
-    <!-- ДОБАВЛЕНО: звук для денежного уведомления -->
     <audio id="moneySound" src="money2.mp3"></audio>
 
     <script>
@@ -147,13 +147,13 @@
       let showingNotification = false;
       let lastBgIncludedSitdown = false;
 
-      // Исходный фон и цвет текста для восстановления
+      // ВОССТАНОВЛЕНИЕ ФОНА — СООТВЕТСТВУЕТ НОВОЙ ПАЛИТРЕ
       const defaultBackground =
-        'radial-gradient(circle, #0b1e3d 40%, #000000 100%),' +
-        'radial-gradient(circle at 20% 30%, #fff 1px, transparent 2px),' +
-        'radial-gradient(circle at 80% 70%, #fff 1px, transparent 2px),' +
-        'radial-gradient(circle at 50% 50%, #fff 1px, transparent 2px)';
-      const defaultColor = '#a0e7ff';
+        'radial-gradient(circle, #2a0e2a 40%, #0a050a 100%),' +
+        'radial-gradient(circle at 20% 30%, #ff9bd8 1px, transparent 2px),' +
+        'radial-gradient(circle at 80% 70%, #ff9bd8 1px, transparent 2px),' +
+        'radial-gradient(circle at 50% 50%, #ff9bd8 1px, transparent 2px)';
+      const defaultColor = '#eaf3ff';
 
       soundBtn.addEventListener('click', () => {
         notifySound
@@ -166,7 +166,7 @@
           .then(() => {
             sitdownSound.pause();
             sitdownSound.currentTime = 0;
-            return moneySound.play(); // NEW: «разбудить» money2.mp3
+            return moneySound.play(); // «разбудить» money2.mp3
           })
           .then(() => {
             moneySound.pause();
@@ -191,10 +191,7 @@
             html += '<tr>';
             if (Array.isArray(row)) {
               let filteredRow = row.slice();
-              while (
-                filteredRow.length &&
-                filteredRow[filteredRow.length - 1] === ''
-              ) {
+              while (filteredRow.length && filteredRow[filteredRow.length - 1] === '') {
                 filteredRow.pop();
               }
               filteredRow.forEach((cell) => {
@@ -219,7 +216,7 @@
 
           lastBgIncludedSitdown = containsSitdown;
         } catch (e) {
-          bgDiv.textContent = 'Ошибка загрузки данных: ' + e.message;
+          bgDiv.textContent = 'Та бля, интернет слетел: ' + e.message;
           console.error(e);
         }
       }
@@ -240,10 +237,9 @@
         msgDiv.style.display = 'flex';
         bgDiv.style.display = 'none';
 
-        // Красивый фон уведомления и цвет текста
         document.body.style.background =
-          'linear-gradient(135deg, #e0f0ff, #a0c8ff)';
-        document.body.style.color = '#073763';
+          'linear-gradient(135deg, #c8f1ff, #d7c4ff)';
+        document.body.style.color = '#172333';
 
         sitdownSound.play().catch(console.error);
 
@@ -251,7 +247,6 @@
           msgDiv.style.display = 'none';
           bgDiv.style.display = 'flex';
 
-          // Восстановление исходного фона и цвета
           document.body.style.background = defaultBackground;
           document.body.style.color = defaultColor;
 
@@ -264,12 +259,11 @@
         }, 5000);
       }
 
-      // ДОБАВЛЕНО: показ денежного уведомления "Мамонт нам занес ...р" со звуком money.mp3
       function showDelta(deltaText) {
         if (showingNotification) return;
         showingNotification = true;
 
-        const pure = String(deltaText).replace(/^DELTA:/, '').trim(); // "+400 000" или "−250 000"
+        const pure = String(deltaText).replace(/^DELTA:/, '').trim();
         const banner = `Занос от мамонта ${pure}р`;
 
         msgDiv.textContent = banner;
@@ -277,13 +271,13 @@
         bgDiv.style.display = 'none';
 
         document.body.style.background =
-          'linear-gradient(135deg, #e0f0ff, #a0c8ff)';
-        document.body.style.color = '#073763';
+          'linear-gradient(135deg, #c8f1ff, #d7c4ff)';
+        document.body.style.color = '#172333';
 
         if (pure.startsWith('+')) {
-          msgDiv.style.boxShadow = '0 4px 18px rgba(0, 160, 0, 0.45)';
+          msgDiv.style.boxShadow = '0 4px 18px rgba(20, 200, 140, 0.55)';
         } else {
-          msgDiv.style.boxShadow = '0 4px 18px rgba(200, 0, 0, 0.45)';
+          msgDiv.style.boxShadow = '0 4px 18px rgba(225, 70, 70, 0.55)';
         }
 
         moneySound.currentTime = 0;
@@ -295,11 +289,9 @@
 
           document.body.style.background = defaultBackground;
           document.body.style.color = defaultColor;
-          msgDiv.style.boxShadow = '0 4px 15px rgba(0, 60, 120, 0.4)';
+          msgDiv.style.boxShadow = '0 4px 15px rgba(10, 60, 120, 0.45)';
 
           showingNotification = false;
-
-          // продолжим очередь, как в showNextMessage
           if (queue.length > 0) showNextMessage();
         }, 20000);
 
@@ -334,8 +326,6 @@
         if (queue.length === 0) return;
 
         const message = queue.shift();
-
-        // ДОБАВЛЕНО: перехват спец-сообщения DELTA:+...
         if (String(message).startsWith('DELTA:')) {
           showDelta(String(message));
           return;
@@ -347,10 +337,9 @@
         msgDiv.style.display = 'flex';
         bgDiv.style.display = 'none';
 
-        // Красивый фон уведомления и цвет текста
         document.body.style.background =
-          'linear-gradient(135deg, #e0f0ff, #a0c8ff)';
-        document.body.style.color = '#073763';
+          'linear-gradient(135deg, #c8f1ff, #d7c4ff)';
+        document.body.style.color = '#172333';
 
         notifySound.play().catch(console.error);
 
@@ -358,7 +347,6 @@
           msgDiv.style.display = 'none';
           bgDiv.style.display = 'flex';
 
-          // Восстановление исходного фона и цвета
           document.body.style.background = defaultBackground;
           document.body.style.color = defaultColor;
 
