@@ -78,6 +78,7 @@
       text-shadow: none;
       position: relative;
       transition: background-color 0.3s ease;
+      text-align: center; /* базовое выравнивание по центру */
     }
 
     /* Заголовки */
@@ -86,6 +87,11 @@
       color: #00ff88;
       text-shadow: 0 0 12px #0f0, 0 0 20px #0f0;
       animation: pulseGlow 2s infinite alternate;
+    }
+
+    /* ⚡ Новое правило: строки 2–8, первая колонка → по левому краю */
+    #backgroundText table tr:nth-child(n+2):nth-child(-n+8) td:first-child {
+      text-align: left;
     }
 
     /* Медали — без анимаций */
