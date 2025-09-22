@@ -67,7 +67,6 @@
       font-family: monospace;
       border-collapse: collapse;
       user-select: none;
-      /* базовый цвет текста */
       color: #a0e7ff;
     }
     #backgroundText td {
@@ -78,7 +77,7 @@
       text-shadow: none;
       position: relative;
       transition: background-color 0.3s ease;
-      text-align: center; /* базовое выравнивание по центру */
+      text-align: center; /* базовое выравнивание */
     }
 
     /* Заголовки */
@@ -89,9 +88,15 @@
       animation: pulseGlow 2s infinite alternate;
     }
 
-    /* ⚡ Новое правило: строки 2–8, первая колонка → по левому краю */
-    #backgroundText table tr:nth-child(n+2):nth-child(-n+8) td:first-child {
+    /* Имя (U2:U8) слева */
+    #backgroundText td.name-cell {
       text-align: left;
+      padding-right: 20px;
+    }
+    /* Очки и (Вх:...) (U2:U8) справа */
+    #backgroundText td.score-cell {
+      text-align: right;
+      min-width: 140px;  /* чтобы числа ровно строились */
     }
 
     /* Медали — без анимаций */
@@ -119,7 +124,6 @@
 
   <audio id="notifySound" src="mamont2.mp3"></audio>
   <audio id="sitdownSound" src="sitdown.mp3"></audio>
-  <!-- ДОБАВЛЕНО: звук для денежного уведомления -->
   <audio id="moneySound" src="money2.mp3"></audio>
 
   <script>
@@ -127,15 +131,14 @@
     const msgDiv = document.getElementById('message');
     const notifySound = document.getElementById('notifySound');
     const sitdownSound = document.getElementById('sitdownSound');
-    const moneySound  = document.getElementById('moneySound'); // NEW
+    const moneySound  = document.getElementById('moneySound');
     const soundBtn = document.getElementById('enableSound');
 
     let queue = [];
     let showingNotification = false;
     let lastBgIncludedSitdown = false;
 
-    // Исходный фон и цвет текста для восстановления
-    const defaultBackground = 
+    const defaultBackground =
       'radial-gradient(circle, #0b1e3d 40%, #000000 100%),' +
       'radial-gradient(circle at 20% 30%, #fff 1px, transparent 2px),' +
       'radial-gradient(circle at 80% 70%, #fff 1px, transparent 2px),' +
@@ -150,7 +153,7 @@
       }).then(() => {
         sitdownSound.pause();
         sitdownSound.currentTime = 0;
-        return moneySound.play(); // NEW: «разбудить» money2.mp3
+        return moneySound.play();
       }).then(() => {
         moneySound.pause();
         moneySound.currentTime = 0;
@@ -168,18 +171,37 @@
 
         let html = '<table>';
 
-        values.forEach(row => {
+        values.forEach((row, rIndex) => {
           html += '<tr>';
           if (Array.isArray(row)) {
             let filteredRow = row.slice();
             while (filteredRow.length && filteredRow[filteredRow.length - 1] === "") {
               filteredRow.pop();
             }
-            filteredRow.forEach(cell => {
-              html += `<td>${cell}</td>`;
+            filteredRow.forEach((cell, cIndex) => {
+              if (cIndex === 0) {
+                // Первая колонка (U1..U10). Для строк 2–8 делим на "имя" и "хвост".
+                if (rIndex >= 1 && rIndex <= 7 && typeof cell === 'string') {
+                  // Разделяем по первому дефису (обычный '-' или '–') и переносим хвост вправо
+                  const m = cell.match(/^(.*?)(?:\s*[–-]\s*)(.+)$/);
+                  if (m) {
+                    html += `<td class="name-cell">${m[1].trim()}</td>`;
+                    html += `<td class="score-cell">${m[2].trim()}</td>`;
+                  } else {
+                    // если не распарсилось — просто одна ячейка слева, но чтобы сетка совпала, растягиваем на 2
+                    html += `<td class="name-cell" colspan="2">${cell}</td>`;
+                  }
+                } else {
+                  // Заголовок (U1) и строки ниже U8 — центр и объединение двух "виртуальных" колонок
+                  html += `<td colspan="2">${cell}</td>`;
+                }
+              } else {
+                // Прочие колонки остаются как были
+                html += `<td>${cell}</td>`;
+              }
             });
           } else {
-            html += `<td>${row}</td>`;
+            html += `<td colspan="2">${row}</td>`;
           }
           html += '</tr>';
         });
@@ -195,7 +217,6 @@
         if (containsSitdown && !lastBgIncludedSitdown) {
           showSitdown();
         }
-
         lastBgIncludedSitdown = containsSitdown;
       } catch (e) {
         bgDiv.textContent = 'Ошибка загрузки данных: ' + e.message;
@@ -219,7 +240,6 @@
       msgDiv.style.display = 'flex';
       bgDiv.style.display = 'none';
 
-      // Красивый фон уведомления и цвет текста
       document.body.style.background = 'linear-gradient(135deg, #e0f0ff, #a0c8ff)';
       document.body.style.color = '#073763';
 
@@ -229,7 +249,6 @@
         msgDiv.style.display = 'none';
         bgDiv.style.display = 'flex';
 
-        // Восстановление исходного фона и цвета
         document.body.style.background = defaultBackground;
         document.body.style.color = defaultColor;
 
@@ -242,7 +261,6 @@
       }, 5000);
     }
 
-    // ДОБАВЛЕНО: показ денежного уведомления "Мамонт нам занес ...р" со звуком money.mp3
     function showDelta(deltaText) {
       if (showingNotification) return;
       showingNotification = true;
@@ -276,7 +294,6 @@
 
         showingNotification = false;
 
-        // продолжим очередь, как в showNextMessage
         if (queue.length > 0) showNextMessage();
       }, 20000);
 
@@ -308,7 +325,6 @@
 
       const message = queue.shift();
 
-      // ДОБАВЛЕНО: перехват спец-сообщения DELTA:+...
       if (String(message).startsWith('DELTA:')) {
         showDelta(String(message));
         return;
@@ -320,7 +336,6 @@
       msgDiv.style.display = 'flex';
       bgDiv.style.display = 'none';
 
-      // Красивый фон уведомления и цвет текста
       document.body.style.background = 'linear-gradient(135deg, #e0f0ff, #a0c8ff)';
       document.body.style.color = '#073763';
 
@@ -330,7 +345,6 @@
         msgDiv.style.display = 'none';
         bgDiv.style.display = 'flex';
 
-        // Восстановление исходного фона и цвета
         document.body.style.background = defaultBackground;
         document.body.style.color = defaultColor;
 
