@@ -31,88 +31,60 @@
       white-space: pre-line;
       flex-direction: column;
     }
-    #backgroundText {
-      font-size: 2.5em;
-      z-index: 1;
-    }
+    #backgroundText { font-size: 2.5em; z-index: 1; }
     #message {
-      font-size: 3.5em;
-      z-index: 2;
-      color: #073763; /* тёмно-синий */
-      background: linear-gradient(135deg, #e0f0ff, #a0c8ff);
+      font-size: 3.5em; z-index: 2;
+      color: #073763; background: linear-gradient(135deg, #e0f0ff, #a0c8ff);
       box-shadow: 0 4px 15px rgba(0, 60, 120, 0.4);
-      border-radius: 12px;
-      padding: 3rem 4rem;
-      display: none;
-      user-select: none;
-      line-height: 1.2;
+      border-radius: 12px; padding: 3rem 4rem;
+      display: none; user-select: none; line-height: 1.2;
     }
     #enableSound {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 1000;
-      padding: 10px 20px;
-      font-size: 1em;
-      background: #222;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+      position: absolute; top: 10px; right: 10px; z-index: 1000;
+      padding: 10px 20px; font-size: 1em; background: #222; color: white;
+      border: none; border-radius: 5px; cursor: pointer;
     }
 
     /* Таблица */
     #backgroundText table {
-      margin: auto;
-      font-family: monospace;
-      border-collapse: collapse;
-      user-select: none;
-      color: #a0e7ff;
+      margin: auto; font-family: monospace; border-collapse: collapse;
+      user-select: none; color: #a0e7ff;
     }
     #backgroundText td {
-      padding: 2px 10px;
-      border: 1px solid #555;
-      white-space: nowrap;
-      color: #a0e7ff;
-      text-shadow: none;
-      position: relative;
-      transition: background-color 0.3s ease;
-      text-align: center; /* базовое выравнивание */
+      padding: 2px 10px; border: 1px solid #555; white-space: nowrap;
+      color: #a0e7ff; text-shadow: none; position: relative;
+      transition: background-color 0.3s ease; text-align: center; /* базовое */
     }
 
     /* Заголовки */
     #backgroundText tr:first-child td {
-      font-weight: bold;
-      color: #00ff88;
+      font-weight: bold; color: #00ff88;
       text-shadow: 0 0 12px #0f0, 0 0 20px #0f0;
       animation: pulseGlow 2s infinite alternate;
     }
 
-    /* Имя (U2:U8) слева */
-    #backgroundText td.name-cell {
-      text-align: left;
-      padding-right: 20px;
-    }
-    /* Очки и (Вх:...) (U2:U8) справа */
-    #backgroundText td.score-cell {
-      text-align: right;
-      min-width: 140px;  /* чтобы числа ровно строились */
+    /* Имя (U2:U8) слева / очки справа */
+    #backgroundText td.name-cell { text-align: left; padding-right: 20px; }
+    #backgroundText td.score-cell { text-align: right; min-width: 140px; }
+
+    /* ✅ Закрашиваем объединённый левый блок U9 и U10 */
+    #backgroundText td.tail-left {
+      background-color: #f05027 !important; /* зелёный */
+      color: #fff !important;
+      font-weight: bold;
     }
 
-    /* Медали — без анимаций */
+    /* Медали — без анимаций (опционально) */
     #backgroundText td:has(> .medal),
     #backgroundText td:contains("🥇"),
     #backgroundText td:contains("🥈"),
     #backgroundText td:contains("🥉") {
-      animation: none !important;
-      color: #a0e7ff;
-      text-shadow: none;
+      animation: none !important; color: #a0e7ff; text-shadow: none;
     }
 
-    /* Анимация бегущей подсветки по строкам */
     @keyframes rowHighlight {
-      0%   { background-color: transparent; }
-      50%  { background-color: rgba(0, 255, 255, 0.3); }
+      0% { background-color: transparent; }
+      50% { background-color: rgba(0, 255, 255, 0.3); }
       100% { background-color: transparent; }
     }
   </style>
@@ -147,20 +119,16 @@
 
     soundBtn.addEventListener('click', () => {
       notifySound.play().then(() => {
-        notifySound.pause();
-        notifySound.currentTime = 0;
+        notifySound.pause(); notifySound.currentTime = 0;
         return sitdownSound.play();
       }).then(() => {
-        sitdownSound.pause();
-        sitdownSound.currentTime = 0;
+        sitdownSound.pause(); sitdownSound.currentTime = 0;
         return moneySound.play();
       }).then(() => {
-        moneySound.pause();
-        moneySound.currentTime = 0;
+        moneySound.pause(); moneySound.currentTime = 0;
         soundBtn.style.display = 'none';
       }).catch(e => {
-        alert("Браузер заблокировал звук. Попробуйте ещё раз.");
-        console.error(e);
+        alert("Браузер заблокировал звук. Попробуйте ещё раз."); console.error(e);
       });
     });
 
@@ -175,33 +143,41 @@
           html += '<tr>';
           if (Array.isArray(row)) {
             let filteredRow = row.slice();
-            while (filteredRow.length && filteredRow[filteredRow.length - 1] === "") {
-              filteredRow.pop();
-            }
+            while (filteredRow.length && filteredRow[filteredRow.length - 1] === "") filteredRow.pop();
+
             filteredRow.forEach((cell, cIndex) => {
               if (cIndex === 0) {
-                // Первая колонка (U1..U10). Для строк 2–8 делим на "имя" и "хвост".
+                // Первая «U»-колонка
                 if (rIndex >= 1 && rIndex <= 7 && typeof cell === 'string') {
-                  // Разделяем по первому дефису (обычный '-' или '–') и переносим хвост вправо
+                  // U2:U8 — имя слева, хвост справа
                   const m = cell.match(/^(.*?)(?:\s*[–-]\s*)(.+)$/);
                   if (m) {
                     html += `<td class="name-cell">${m[1].trim()}</td>`;
                     html += `<td class="score-cell">${m[2].trim()}</td>`;
                   } else {
-                    // если не распарсилось — просто одна ячейка слева, но чтобы сетка совпала, растягиваем на 2
                     html += `<td class="name-cell" colspan="2">${cell}</td>`;
                   }
+                } else if (rIndex >= 8) {
+                  // ✅ U9:U10 — объединяем 2 левые виртуальные колонки в одну зелёную
+                  html += `<td class="tail-left" colspan="2">${cell}</td>`;
                 } else {
-                  // Заголовок (U1) и строки ниже U8 — центр и объединение двух "виртуальных" колонок
+                  // Заголовок (U1) — тоже объединён
                   html += `<td colspan="2">${cell}</td>`;
                 }
               } else {
-                // Прочие колонки остаются как были
+                // Остальные реальные колонки — как были
                 html += `<td>${cell}</td>`;
               }
             });
           } else {
-            html += `<td colspan="2">${row}</td>`;
+            // Строка не массив
+            if (rIndex >= 8) {
+              html += `<td class="tail-left" colspan="2">${row}</td>`;
+            } else if (rIndex >= 1 && rIndex <= 7) {
+              html += `<td class="name-cell" colspan="2">${row}</td>`;
+            } else {
+              html += `<td colspan="2">${row}</td>`;
+            }
           }
           html += '</tr>';
         });
@@ -213,10 +189,7 @@
 
         const flatValues = values.flat().join(' ').toLowerCase();
         const containsSitdown = flatValues.includes('можем садиться');
-
-        if (containsSitdown && !lastBgIncludedSitdown) {
-          showSitdown();
-        }
+        if (containsSitdown && !lastBgIncludedSitdown) showSitdown();
         lastBgIncludedSitdown = containsSitdown;
       } catch (e) {
         bgDiv.textContent = 'Ошибка загрузки данных: ' + e.message;
@@ -242,30 +215,22 @@
 
       document.body.style.background = 'linear-gradient(135deg, #e0f0ff, #a0c8ff)';
       document.body.style.color = '#073763';
-
       sitdownSound.play().catch(console.error);
 
       setTimeout(() => {
-        msgDiv.style.display = 'none';
-        bgDiv.style.display = 'flex';
-
-        document.body.style.background = defaultBackground;
-        document.body.style.color = defaultColor;
-
+        msgDiv.style.display = 'none'; bgDiv.style.display = 'flex';
+        document.body.style.background = defaultBackground; document.body.style.color = defaultColor;
         showingNotification = false;
       }, 20000);
 
-      setTimeout(() => {
-        sitdownSound.pause();
-        sitdownSound.currentTime = 0;
-      }, 5000);
+      setTimeout(() => { sitdownSound.pause(); sitdownSound.currentTime = 0; }, 5000);
     }
 
     function showDelta(deltaText) {
       if (showingNotification) return;
       showingNotification = true;
 
-      const pure = String(deltaText).replace(/^DELTA:/, '').trim(); // "+400 000" или "−250 000"
+      const pure = String(deltaText).replace(/^DELTA:/, '').trim();
       const banner = `Занос от мамонта ${pure}р`;
 
       msgDiv.textContent = banner;
@@ -275,32 +240,19 @@
       document.body.style.background = 'linear-gradient(135deg, #e0f0ff, #a0c8ff)';
       document.body.style.color = '#073763';
 
-      if (pure.startsWith('+')) {
-        msgDiv.style.boxShadow = '0 4px 18px rgba(0, 160, 0, 0.45)';
-      } else {
-        msgDiv.style.boxShadow = '0 4px 18px rgba(200, 0, 0, 0.45)';
-      }
+      if (pure.startsWith('+')) msgDiv.style.boxShadow = '0 4px 18px rgba(0,160,0,.45)';
+      else msgDiv.style.boxShadow = '0 4px 18px rgba(200,0,0,.45)';
 
-      moneySound.currentTime = 0;
-      moneySound.play().catch(console.error);
+      moneySound.currentTime = 0; moneySound.play().catch(console.error);
 
       setTimeout(() => {
-        msgDiv.style.display = 'none';
-        bgDiv.style.display = 'flex';
-
-        document.body.style.background = defaultBackground;
-        document.body.style.color = defaultColor;
-        msgDiv.style.boxShadow = '0 4px 15px rgba(0, 60, 120, 0.4)';
-
-        showingNotification = false;
-
-        if (queue.length > 0) showNextMessage();
+        msgDiv.style.display = 'none'; bgDiv.style.display = 'flex';
+        document.body.style.background = defaultBackground; document.body.style.color = defaultColor;
+        msgDiv.style.boxShadow = '0 4px 15px rgba(0,60,120,.4)';
+        showingNotification = false; if (queue.length > 0) showNextMessage();
       }, 20000);
 
-      setTimeout(() => {
-        moneySound.pause();
-        moneySound.currentTime = 0;
-      }, 20000);
+      setTimeout(() => { moneySound.pause(); moneySound.currentTime = 0; }, 20000);
     }
 
     async function fetchMessages() {
@@ -311,24 +263,15 @@
         const messages = await res.json();
         const filtered = messages.filter(msg => !String(msg).toLowerCase().includes('можем садиться'));
 
-        if (filtered.length > 0) {
-          queue.push(...filtered);
-          showNextMessage();
-        }
-      } catch (e) {
-        console.error('Ошибка получения сообщений:', e);
-      }
+        if (filtered.length > 0) { queue.push(...filtered); showNextMessage(); }
+      } catch (e) { console.error('Ошибка получения сообщений:', e); }
     }
 
     function showNextMessage() {
       if (queue.length === 0) return;
 
       const message = queue.shift();
-
-      if (String(message).startsWith('DELTA:')) {
-        showDelta(String(message));
-        return;
-      }
+      if (String(message).startsWith('DELTA:')) { showDelta(String(message)); return; }
 
       showingNotification = true;
 
@@ -338,25 +281,15 @@
 
       document.body.style.background = 'linear-gradient(135deg, #e0f0ff, #a0c8ff)';
       document.body.style.color = '#073763';
-
       notifySound.play().catch(console.error);
 
       setTimeout(() => {
-        msgDiv.style.display = 'none';
-        bgDiv.style.display = 'flex';
-
-        document.body.style.background = defaultBackground;
-        document.body.style.color = defaultColor;
-
-        showingNotification = false;
-
-        if (queue.length > 0) showNextMessage();
+        msgDiv.style.display = 'none'; bgDiv.style.display = 'flex';
+        document.body.style.background = defaultBackground; document.body.style.color = defaultColor;
+        showingNotification = false; if (queue.length > 0) showNextMessage();
       }, 20000);
 
-      setTimeout(() => {
-        notifySound.pause();
-        notifySound.currentTime = 0;
-      }, 5000);
+      setTimeout(() => { notifySound.pause(); notifySound.currentTime = 0; }, 5000);
     }
 
     fetchBackground();
