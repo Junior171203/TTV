@@ -67,16 +67,16 @@
     #backgroundText td.name-cell { text-align: left; padding-right: 20px; }
     #backgroundText td.score-cell { text-align: right; min-width: 140px; }
 
-    /* ✅ Подсветка городов */
+    /* Подсветка городов */
     #backgroundText td.city-cell {
       background: #ffd400 !important; /* жёлтый */
       color: #000 !important;
       font-weight: bold;
     }
 
-    /* ✅ Закрашиваем объединённый левый блок U9 и U10 (как было) */
+    /* Нижний объединённый левый блок (U9:U10) */
     #backgroundText td.tail-left {
-      background-color: #800080 !important; /* фиолетовый из твоего примера */
+      background-color: #800080 !important; /* фиолетовый */
       color: #fff !important;
       font-weight: bold;
     }
@@ -101,7 +101,8 @@
   <div id="message"></div>
   <button id="enableSound">🔊 Включить звук</button>
 
-  <audio id="notifySound" src="mamонт2.mp3"></audio>
+  <!-- ВАЖНО: правильное имя файла -->
+  <audio id="notifySound" src="mamont2.mp3"></audio>
   <audio id="sitdownSound" src="sitdown.mp3"></audio>
   <audio id="moneySound" src="money2.mp3"></audio>
 
@@ -127,18 +128,23 @@
       'radial-gradient(circle at 50% 50%, #fff 1px, transparent 2px)';
     const defaultColor = '#a0e7ff';
 
+    /* Возврат к прежней логике «разбудить» аудио по кнопке */
     soundBtn.addEventListener('click', () => {
       notifySound.play().then(() => {
-        notifySound.pause(); notifySound.currentTime = 0;
+        notifySound.pause();
+        notifySound.currentTime = 0;
         return sitdownSound.play();
       }).then(() => {
-        sitdownSound.pause(); sitdownSound.currentTime = 0;
+        sitdownSound.pause();
+        sitdownSound.currentTime = 0;
         return moneySound.play();
       }).then(() => {
-        moneySound.pause(); moneySound.currentTime = 0;
+        moneySound.pause();
+        moneySound.currentTime = 0;
         soundBtn.style.display = 'none';
       }).catch(e => {
-        alert("Браузер заблокировал звук. Попробуйте ещё раз."); console.error(e);
+        alert("Браузер заблокировал звук. Попробуйте ещё раз.");
+        console.error(e);
       });
     });
 
@@ -156,14 +162,15 @@
             while (filteredRow.length && filteredRow[filteredRow.length - 1] === "") filteredRow.pop();
 
             filteredRow.forEach((cell, cIndex) => {
-              // жёлтая подсветка для Винница/Киев/Хмель (без изменения логики)
-              const isCity = ["винница","киев","хмель"].includes(String(cell).toLowerCase());
-              const cityClass = isCity ? " city-cell" : "";
+              // подсветка для Винница/Киев/Хмель (строго по содержимому ячейки, без логики таблиц)
+              const norm = String(cell).toLowerCase().trim();
+              const isCity = ['винница','киев','хмель'].includes(norm);
+              const cityClass = isCity ? ' city-cell' : '';
 
               if (cIndex === 0) {
                 // Первая «U»-колонка
                 if (rIndex >= 1 && rIndex <= 7 && typeof cell === 'string') {
-                  // U2:U8 — имя слева, хвост справа (как было)
+                  // U2:U8 — имя слева, хвост справа
                   const m = cell.match(/^(.*?)(?:\s*[–-]\s*)(.+)$/);
                   if (m) {
                     html += `<td class="name-cell${cityClass}">${m[1].trim()}</td>`;
@@ -172,19 +179,18 @@
                     html += `<td class="name-cell${cityClass}" colspan="2">${cell}</td>`;
                   }
                 } else if (rIndex >= 8) {
-                  // U9:U10 — объединённый левый блок (как было)
+                  // U9:U10 — объединённый левый блок
                   html += `<td class="tail-left${cityClass}" colspan="2">${cell}</td>`;
                 } else {
-                  // Заголовок U1 (как было)
+                  // Заголовок U1
                   html += `<td colspan="2" class="${cityClass.trim()}">${cell}</td>`;
                 }
               } else {
-                // Остальные реальные колонки (как было)
-                html += `<td>${cell}</td>`;
+                // Остальные колонки — ТЕПЕРЬ с учётом cityClass (исправлено)
+                html += `<td class="${cityClass.trim()}">${cell}</td>`;
               }
             });
           } else {
-            // Строка не массив (как было)
             html += `<td colspan="2">${row}</td>`;
           }
           html += '</tr>';
@@ -251,7 +257,8 @@
       if (pure.startsWith('+')) msgDiv.style.boxShadow = '0 4px 18px rgba(0,160,0,.45)';
       else msgDiv.style.boxShadow = '0 4px 18px rgba(200,0,0,.45)';
 
-      moneySound.currentTime = 0; moneySound.play().catch(console.error);
+      moneySound.currentTime = 0;
+      moneySound.play().catch(console.error);
 
       setTimeout(() => {
         msgDiv.style.display = 'none'; bgDiv.style.display = 'flex';
@@ -263,7 +270,6 @@
       setTimeout(() => { moneySound.pause(); moneySound.currentTime = 0; }, 20000);
     }
 
-    // 🔧 ПРАВКА: всегда тянем /exec + отключаем кеш
     async function fetchMessages() {
       try {
         const res = await fetch(`${MSG_URL}?ts=${Date.now()}`, { cache: 'no-store' });
@@ -322,7 +328,7 @@
 
     fetchBackground();
     setInterval(fetchBackground, 30000);
-    fetchMessages(); // первый заход сразу
+    fetchMessages();
     setInterval(fetchMessages, 5000);
   </script>
 </body>
