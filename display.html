@@ -63,7 +63,7 @@
       animation: pulseGlow 2s infinite alternate;
     }
 
-    /* Имя (U2:U8) слева / очки справа */
+    /* Имя слева / очки справа */
     #backgroundText td.name-cell { text-align: left; padding-right: 20px; }
     #backgroundText td.score-cell { text-align: right; min-width: 140px; }
 
@@ -74,14 +74,14 @@
       font-weight: bold;
     }
 
-    /* Нижний объединённый левый блок (U9:U10) */
+    /* Фиолетовый блок — только две последние строки */
     #backgroundText td.tail-left {
       background-color: #800080 !important; /* фиолетовый */
       color: #fff !important;
       font-weight: bold;
     }
 
-    /* Медали — без анимаций (опционально) */
+    /* Медали — без анимаций */
     #backgroundText td:has(> .medal),
     #backgroundText td:contains("🥇"),
     #backgroundText td:contains("🥈"),
@@ -101,7 +101,6 @@
   <div id="message"></div>
   <button id="enableSound">🔊 Включить звук</button>
 
-  <!-- ВАЖНО: правильное имя файла -->
   <audio id="notifySound" src="mamont2.mp3"></audio>
   <audio id="sitdownSound" src="sitdown.mp3"></audio>
   <audio id="moneySound" src="money2.mp3"></audio>
@@ -128,7 +127,6 @@
       'radial-gradient(circle at 50% 50%, #fff 1px, transparent 2px)';
     const defaultColor = '#a0e7ff';
 
-    /* Возврат к прежней логике «разбудить» аудио по кнопке */
     soundBtn.addEventListener('click', () => {
       notifySound.play().then(() => {
         notifySound.pause();
@@ -153,6 +151,9 @@
         const res = await fetch(`${BG_URL}&ts=${Date.now()}`, { cache: 'no-store' });
         const values = await res.json();
 
+        /* Фиолетовыми будут только две последние строки */
+        const lastTwoStart = Math.max(0, values.length - 2);
+
         let html = '<table>';
 
         values.forEach((row, rIndex) => {
@@ -162,31 +163,26 @@
             while (filteredRow.length && filteredRow[filteredRow.length - 1] === "") filteredRow.pop();
 
             filteredRow.forEach((cell, cIndex) => {
-              // подсветка для Винница/Киев/Хмель (строго по содержимому ячейки, без логики таблиц)
               const norm = String(cell).toLowerCase().trim();
               const isCity = ['винница','киев','хмель'].includes(norm);
               const cityClass = isCity ? ' city-cell' : '';
 
               if (cIndex === 0) {
-                // Первая «U»-колонка
-                if (rIndex >= 1 && rIndex <= 7 && typeof cell === 'string') {
-                  // U2:U8 — имя слева, хвост справа
-                  const m = cell.match(/^(.*?)(?:\s*[–-]\s*)(.+)$/);
-                  if (m) {
-                    html += `<td class="name-cell${cityClass}">${m[1].trim()}</td>`;
-                    html += `<td class="score-cell">${m[2].trim()}</td>`;
-                  } else {
-                    html += `<td class="name-cell${cityClass}" colspan="2">${cell}</td>`;
-                  }
-                } else if (rIndex >= 8) {
-                  // U9:U10 — объединённый левый блок
+                // Разбивка "Имя — очки" не только для U2:U8,
+                // но и для любых строк (кроме двух последних), где есть дефис-разделитель.
+                const text = String(cell);
+                const canSplit = /(.*?)(?:\s*[–-]\s*)(.+)/.test(text);
+
+                if ((rIndex >= 1 && rIndex <= 7) || (canSplit && rIndex < lastTwoStart)) {
+                  const m = text.match(/(.*?)(?:\s*[–-]\s*)(.+)/);
+                  html += `<td class="name-cell${cityClass}">${m[1].trim()}</td>`;
+                  html += `<td class="score-cell">${m[2].trim()}</td>`;
+                } else if (rIndex >= lastTwoStart) {
                   html += `<td class="tail-left${cityClass}" colspan="2">${cell}</td>`;
                 } else {
-                  // Заголовок U1
                   html += `<td colspan="2" class="${cityClass.trim()}">${cell}</td>`;
                 }
               } else {
-                // Остальные колонки — ТЕПЕРЬ с учётом cityClass (исправлено)
                 html += `<td class="${cityClass.trim()}">${cell}</td>`;
               }
             });
@@ -276,7 +272,6 @@
         const messages = await res.json();
         if (!Array.isArray(messages)) return;
 
-        // исключаем «можем садиться» (их покажет отдельная логика)
         const filtered = messages.filter(msg => !String(msg).toLowerCase().includes('можем садиться'));
 
         if (filtered.length > 0) {
