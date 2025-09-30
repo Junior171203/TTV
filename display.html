@@ -168,13 +168,11 @@
               const cityClass = isCity ? ' city-cell' : '';
 
               if (cIndex === 0) {
-                // Разбивка "Имя — очки" не только для U2:U8,
-                // но и для любых строк (кроме двух последних), где есть дефис-разделитель.
+                // делим "Имя — очки" только если реально нашли разделитель
                 const text = String(cell);
-                const canSplit = /(.*?)(?:\s*[–-]\s*)(.+)/.test(text);
+                const m = text.match(/^(.*?)(?:\s*[–-]\s*)(.+)$/);
 
-                if ((rIndex >= 1 && rIndex <= 7) || (canSplit && rIndex < lastTwoStart)) {
-                  const m = text.match(/(.*?)(?:\s*[–-]\s*)(.+)/);
+                if (m && rIndex < lastTwoStart) {
                   html += `<td class="name-cell${cityClass}">${m[1].trim()}</td>`;
                   html += `<td class="score-cell">${m[2].trim()}</td>`;
                 } else if (rIndex >= lastTwoStart) {
