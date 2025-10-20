@@ -6,92 +6,62 @@
   <title>Входяшки</title>
   <style>
     html, body {
-      margin: 0; padding: 0;
-      height: 100%;
-      font-family: Arial, sans-serif;
-
+      margin: 0; padding: 0; height: 100%; font-family: Arial, sans-serif;
       background:
         radial-gradient(circle, #0b1e3d 40%, #000000 100%),
         radial-gradient(circle at 20% 30%, #fff 1px, transparent 2px),
         radial-gradient(circle at 80% 70%, #fff 1px, transparent 2px),
         radial-gradient(circle at 50% 50%, #fff 1px, transparent 2px);
-      background-repeat: no-repeat;
-      background-size: cover;
-
-      color: #a0e7ff;
-      transition: background 0.5s ease, color 0.5s ease;
+      background-repeat: no-repeat; background-size: cover;
+      color: #a0e7ff; transition: background .5s ease, color .5s ease;
     }
     #backgroundText, #message {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      white-space: pre-line;
-      flex-direction: column;
+      position: fixed; inset: 0; display: flex; justify-content: center; align-items: center;
+      text-align: center; white-space: pre-line; flex-direction: column;
     }
     #backgroundText { font-size: 2.5em; z-index: 1; }
     #message {
-      font-size: 3.5em; z-index: 2;
-      color: #073763; background: linear-gradient(135deg, #e0f0ff, #a0c8ff);
-      box-shadow: 0 4px 15px rgba(0, 60, 120, 0.4);
-      border-radius: 12px; padding: 3rem 4rem;
+      font-size: 3.5em; z-index: 2; color: #073763;
+      background: linear-gradient(135deg, #e0f0ff, #a0c8ff);
+      box-shadow: 0 4px 15px rgba(0,60,120,.4); border-radius: 12px; padding: 3rem 4rem;
       display: none; user-select: none; line-height: 1.2;
     }
-    #enableSound {
-      position: absolute; top: 10px; right: 10px; z-index: 1000;
-      padding: 10px 20px; font-size: 1em; background: #222; color: white;
-      border: none; border-radius: 5px; cursor: pointer;
-    }
+    #enableSound { position: absolute; top: 10px; right: 10px; z-index: 1000;
+      padding: 10px 20px; font-size: 1em; background: #222; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
 
     /* Таблица */
-    #backgroundText table {
-      margin: auto; font-family: monospace; border-collapse: collapse;
-      user-select: none; color: #a0e7ff;
-    }
-    #backgroundText td {
-      padding: 2px 10px; border: 1px solid #555; white-space: nowrap;
-      color: #a0e7ff; text-shadow: none; position: relative;
-      transition: background-color 0.3s ease; text-align: center; /* базовое */
-    }
+    #backgroundText table { margin: auto; font-family: monospace; border-collapse: collapse; user-select: none; color: #a0e7ff; }
+    #backgroundText td { padding: 2px 10px; border: 1px solid #555; white-space: nowrap; color: #a0e7ff; text-shadow: none; position: relative; transition: background-color .3s ease; text-align: center; }
 
     /* Заголовки */
-    #backgroundText tr:first-child td {
-      font-weight: bold; color: #00ff88;
-      text-shadow: 0 0 12px #0f0, 0 0 20px #0f0;
-      animation: pulseGlow 2s infinite alternate;
-    }
+    #backgroundText tr:first-child td { font-weight: bold; color: #00ff88; text-shadow: 0 0 12px #0f0, 0 0 20px #0f0; animation: pulseGlow 2s infinite alternate; }
 
     /* Имя слева / очки справа */
     #backgroundText td.name-cell { text-align: left; padding-right: 20px; }
     #backgroundText td.score-cell { text-align: right; min-width: 140px; }
 
     /* Подсветка городов */
-    #backgroundText td.city-cell {
-      background: #ffd400 !important; /* жёлтый */
-      color: #000 !important;
-      font-weight: bold;
-    }
+    #backgroundText td.city-cell { background: #ffd400 !important; color: #000 !important; font-weight: bold; }
 
     /* Фиолетовый блок — только две последние строки */
-    #backgroundText td.tail-left {
-      background-color: #800080 !important; /* фиолетовый */
-      color: #fff !important;
-      font-weight: bold;
-    }
+    #backgroundText td.tail-left { background-color: #800080 !important; color: #fff !important; font-weight: bold; }
 
     /* Медали — без анимаций */
     #backgroundText td:has(> .medal),
     #backgroundText td:contains("🥇"),
     #backgroundText td:contains("🥈"),
-    #backgroundText td:contains("🥉") {
-      animation: none !important; color: #a0e7ff; text-shadow: none;
-    }
+    #backgroundText td:contains("🥉") { animation: none !important; color: #a0e7ff; text-shadow: none; }
+
+    /* Левое выравнивание только для имён под «Топ Роском» */
+    #backgroundText td.roskom-left { text-align: left !important; padding-left: 20px; }
+
+    /* Раскраска колонок ПЗ и ВХ (включая заголовки) */
+    #backgroundText td.pz-cell { background-color: #6bf447 !important; color: #000 !important; font-weight: bold; }
+    #backgroundText td.vx-cell { background-color: #11734b !important; color: #fff !important; font-weight: bold; }
 
     @keyframes rowHighlight {
       0% { background-color: transparent; }
-      50% { background-color: rgba(0, 255, 255, 0.3); }
+      50% { background-color: rgba(0,255,255,.3); }
       100% { background-color: transparent; }
     }
   </style>
@@ -128,22 +98,10 @@
     const defaultColor = '#a0e7ff';
 
     soundBtn.addEventListener('click', () => {
-      notifySound.play().then(() => {
-        notifySound.pause();
-        notifySound.currentTime = 0;
-        return sitdownSound.play();
-      }).then(() => {
-        sitdownSound.pause();
-        sitdownSound.currentTime = 0;
-        return moneySound.play();
-      }).then(() => {
-        moneySound.pause();
-        moneySound.currentTime = 0;
-        soundBtn.style.display = 'none';
-      }).catch(e => {
-        alert("Браузер заблокировал звук. Попробуйте ещё раз.");
-        console.error(e);
-      });
+      notifySound.play().then(() => { notifySound.pause(); notifySound.currentTime = 0; return sitdownSound.play(); })
+      .then(() => { sitdownSound.pause(); sitdownSound.currentTime = 0; return moneySound.play(); })
+      .then(() => { moneySound.pause(); moneySound.currentTime = 0; soundBtn.style.display = 'none'; })
+      .catch(e => { alert('Браузер заблокировал звук. Попробуйте ещё раз.'); console.error(e); });
     });
 
     async function fetchBackground() {
@@ -151,27 +109,69 @@
         const res = await fetch(`${BG_URL}&ts=${Date.now()}`, { cache: 'no-store' });
         const values = await res.json();
 
-        /* Фиолетовыми будут только две последние строки */
         const lastTwoStart = Math.max(0, values.length - 2);
-
         let html = '<table>';
+
+        // индексы колонок
+        let topRoskomColIndex = -1;
+        let pzColIndex = -1;
+        let vxColIndex = -1;
+
+        // флаг для выравнивания имён под «Топ Роском» до блока «Сделали за неделю»
+        let beforeWeeklyBlock = true;
 
         values.forEach((row, rIndex) => {
           html += '<tr>';
           if (Array.isArray(row)) {
             let filteredRow = row.slice();
-            while (filteredRow.length && filteredRow[filteredRow.length - 1] === "") filteredRow.pop();
+            while (filteredRow.length && filteredRow[filteredRow.length - 1] === '') filteredRow.pop();
+
+            const rowTextNorm = filteredRow.map(x => String(x).toLowerCase().trim()).join(' ');
+            const isWeeklySeparatorRow = rowTextNorm.includes('сделали за неделю');
+
+            // для «Передачи» в первой строке — пропустить следующую ячейку (ПЗ)
+            let skipNext = false;
 
             filteredRow.forEach((cell, cIndex) => {
+              // пропустить пустую ячейку на второй строке под «Топ Роском»
+              if (rIndex === 1 && cIndex === topRoskomColIndex) return;
+              if (skipNext) { skipNext = false; return; }
+
               const norm = String(cell).toLowerCase().trim();
               const isCity = ['винница','киев','хмель'].includes(norm);
               const cityClass = isCity ? ' city-cell' : '';
 
+              // Первая строка: объединяем «Передачи» на 2 колонки
+              if (rIndex === 0 && norm === 'передачи') {
+                html += `<td colspan="2"${cityClass ? ` class="${cityClass.trim()}"` : ''}>${cell}</td>`;
+                skipNext = true; // пропускаем «ПЗ»
+                return;
+              }
+
+              // Первая строка: объединяем «Топ Роском» на 2 строки
+              if (rIndex === 0 && norm === 'топ роском') {
+                topRoskomColIndex = cIndex;
+                html += `<td rowspan="2"${cityClass ? ` class="${cityClass.trim()}"` : ''}>${cell}</td>`;
+                return;
+              }
+
+              // Вторая строка: фиксируем индексы колонок ПЗ и ВХ и красим заголовки
+              if (rIndex === 1) {
+                if (String(cell).trim().toUpperCase() === 'ПЗ') {
+                  pzColIndex = cIndex;
+                  html += `<td class="pz-cell${cityClass}">${cell}</td>`;
+                  return;
+                }
+                if (String(cell).trim().toUpperCase() === 'ВХ') {
+                  vxColIndex = cIndex;
+                  html += `<td class="vx-cell${cityClass}">${cell}</td>`;
+                  return;
+                }
+              }
+
               if (cIndex === 0) {
-                // делим "Имя — очки" только если реально нашли разделитель
                 const text = String(cell);
                 const m = text.match(/^(.*?)(?:\s*[–-]\s*)(.+)$/);
-
                 if (m && rIndex < lastTwoStart) {
                   html += `<td class="name-cell${cityClass}">${m[1].trim()}</td>`;
                   html += `<td class="score-cell">${m[2].trim()}</td>`;
@@ -181,9 +181,21 @@
                   html += `<td colspan="2" class="${cityClass.trim()}">${cell}</td>`;
                 }
               } else {
-                html += `<td class="${cityClass.trim()}">${cell}</td>`;
+                // ЛЕВОЕ выравнивание имён под «Топ Роском» до «Сделали за неделю»
+                let extraClass = '';
+                if (beforeWeeklyBlock && topRoskomColIndex === cIndex && rIndex > 1) {
+                  extraClass = ' roskom-left';
+                }
+
+                // Раскраска данных в колонках ПЗ и ВХ
+                if (rIndex > 1 && cIndex === pzColIndex) extraClass += ' pz-cell';
+                if (rIndex > 1 && cIndex === vxColIndex) extraClass += ' vx-cell';
+
+                html += `<td class="${(cityClass + extraClass).trim()}">${cell}</td>`;
               }
             });
+
+            if (isWeeklySeparatorRow) beforeWeeklyBlock = false;
           } else {
             html += `<td colspan="2">${row}</td>`;
           }
@@ -215,52 +227,40 @@
 
     function showSitdown() {
       if (showingNotification) return;
-
       showingNotification = true;
       msgDiv.textContent = 'МОЖЕМ САДИТЬСЯ';
       msgDiv.style.display = 'flex';
       bgDiv.style.display = 'none';
-
       document.body.style.background = 'linear-gradient(135deg, #e0f0ff, #a0c8ff)';
       document.body.style.color = '#073763';
       sitdownSound.play().catch(console.error);
-
       setTimeout(() => {
         msgDiv.style.display = 'none'; bgDiv.style.display = 'flex';
         document.body.style.background = defaultBackground; document.body.style.color = defaultColor;
         showingNotification = false;
       }, 20000);
-
       setTimeout(() => { sitdownSound.pause(); sitdownSound.currentTime = 0; }, 5000);
     }
 
     function showDelta(deltaText) {
       if (showingNotification) return;
       showingNotification = true;
-
       const pure = String(deltaText).replace(/^DELTA:/, '').trim();
       const banner = `Занос от мамонта ${pure}р`;
-
       msgDiv.textContent = banner;
       msgDiv.style.display = 'flex';
       bgDiv.style.display = 'none';
-
       document.body.style.background = 'linear-gradient(135deg, #e0f0ff, #a0c8ff)';
       document.body.style.color = '#073763';
-
       if (pure.startsWith('+')) msgDiv.style.boxShadow = '0 4px 18px rgba(0,160,0,.45)';
       else msgDiv.style.boxShadow = '0 4px 18px rgba(200,0,0,.45)';
-
-      moneySound.currentTime = 0;
-      moneySound.play().catch(console.error);
-
+      moneySound.currentTime = 0; moneySound.play().catch(console.error);
       setTimeout(() => {
         msgDiv.style.display = 'none'; bgDiv.style.display = 'flex';
         document.body.style.background = defaultBackground; document.body.style.color = defaultColor;
         msgDiv.style.boxShadow = '0 4px 15px rgba(0,60,120,.4)';
         showingNotification = false; if (queue.length > 0) showNextMessage();
       }, 20000);
-
       setTimeout(() => { moneySound.pause(); moneySound.currentTime = 0; }, 20000);
     }
 
@@ -269,60 +269,29 @@
         const res = await fetch(`${MSG_URL}?ts=${Date.now()}`, { cache: 'no-store' });
         const messages = await res.json();
         if (!Array.isArray(messages)) return;
-
         const filtered = messages.filter(msg => !String(msg).toLowerCase().includes('можем садиться'));
-
-        if (filtered.length > 0) {
-          queue.push(...filtered);
-          if (!showingNotification) showNextMessage();
-        }
-      } catch (e) {
-        console.error('Ошибка получения сообщений:', e);
-      }
+        if (filtered.length > 0) { queue.push(...filtered); if (!showingNotification) showNextMessage(); }
+      } catch (e) { console.error('Ошибка получения сообщений:', e); }
     }
 
     function showNextMessage() {
       if (queue.length === 0) return;
-
       const message = queue.shift();
-
-      if (String(message).startsWith('DELTA:')) {
-        showDelta(String(message));
-        return;
-      }
-
+      if (String(message).startsWith('DELTA:')) { showDelta(String(message)); return; }
       showingNotification = true;
-
-      msgDiv.textContent = message;
-      msgDiv.style.display = 'flex';
-      bgDiv.style.display = 'none';
-
-      document.body.style.background = 'linear-gradient(135deg, #e0f0ff, #a0c8ff)';
-      document.body.style.color = '#073763';
-
+      msgDiv.textContent = message; msgDiv.style.display = 'flex'; bgDiv.style.display = 'none';
+      document.body.style.background = 'linear-gradient(135deg, #e0f0ff, #a0c8ff)'; document.body.style.color = '#073763';
       notifySound.play().catch(console.error);
-
       setTimeout(() => {
-        msgDiv.style.display = 'none';
-        bgDiv.style.display = 'flex';
-        document.body.style.background = defaultBackground;
-        document.body.style.color = defaultColor;
-
-        showingNotification = false;
-
-        if (queue.length > 0) showNextMessage();
+        msgDiv.style.display = 'none'; bgDiv.style.display = 'flex';
+        document.body.style.background = defaultBackground; document.body.style.color = defaultColor;
+        showingNotification = false; if (queue.length > 0) showNextMessage();
       }, 20000);
-
-      setTimeout(() => {
-        notifySound.pause();
-        notifySound.currentTime = 0;
-      }, 5000);
+      setTimeout(() => { notifySound.pause(); notifySound.currentTime = 0; }, 5000);
     }
 
-    fetchBackground();
-    setInterval(fetchBackground, 30000);
-    fetchMessages();
-    setInterval(fetchMessages, 5000);
+    fetchBackground(); setInterval(fetchBackground, 30000);
+    fetchMessages();  setInterval(fetchMessages, 5000);
   </script>
 </body>
 </html>
