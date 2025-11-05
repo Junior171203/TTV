@@ -212,7 +212,7 @@
         if (containsSitdown && !lastBgIncludedSitdown) showSitdown();
         lastBgIncludedSitdown = containsSitdown;
       } catch (e) {
-        bgDiv.textContent = 'Ошибка загрузки данных: ' + e.message;
+        bgDiv.textContent = 'Отьебнул интернет, скоро само заработает';
         console.error(e);
       }
     }
@@ -295,3 +295,4 @@
   </script>
 </body>
 </html>
+
